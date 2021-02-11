@@ -1,4 +1,4 @@
-<b># Scan_Rede<b><br>
+# Script: Scan_Rede.sh
 Script para identificar todos os dispositivos OnLIne na rede (Informações detalhadas) <br>
 
 <b># Scan_Rede<b><br>
