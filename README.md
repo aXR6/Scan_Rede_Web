@@ -1,4 +1,7 @@
 <b># Scan_Rede<b><br>
+Script para identificar todos os dispositivos OnLIne na rede (Informações detalhadas) <br>
+
+<b># Scan_Rede<b><br>
 Linkedin: https://www.linkedin.com/in/thalles-canela/ <br>
 YouTube:  https://www.youtube.com/c/aXR6CyberSecurity <br>
 Facebook: https://www.facebook.com/axr6PenTest <br>
@@ -9,7 +12,6 @@ Padim:    https://www.padrim.com.br/aXR6CyberSecurity <br>
 
 # Script: Scan_Rede.sh
 ```
-Script para identificar todos os dispositivos na rede (Informações detalhadas)
 Obs 1.: Instalação automatica dos programas: Nmap, Nikto e o Photon.
 Obs 2.: Instalação automatica do componente TLD via PIP.
 Obs 3.: EXECUTE O SCRIPT COMO USUARIO ROOT.
