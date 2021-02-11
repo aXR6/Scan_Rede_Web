@@ -10,9 +10,10 @@ Padim:    https://www.padrim.com.br/aXR6CyberSecurity <br>
 # Script: Scan_Rede.sh
 ```
 Script para identificar todos os dispositivos na rede (Informações detalhadas)
-Obs 1.: Na linha número 12 você deve informar o nome da sua pasta de usuário, exemplo:
-Linha 12: dir="/home/NOME_DA_SUA_PASTA/Documentos/$data/"
-Obs 2.: Você deve ter instalados: Nmap, Nikto e o Photon
+Obs 1.: Instalação automatica dos programas: Nmap, Nikto e o Photon.
+Obs 2.: Instalação automatica do componente TLD via PIP.
+Obs 3.: EXECUTE O SCRIPT COMO USUARIO ROOT.
+Obs 4.: Python (pip), Python2 (pip2), Python3 (pip3).
 ```
 
 # Basta apenas clonar o repositório, dar permissão e executar o script.
