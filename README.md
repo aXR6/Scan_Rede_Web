@@ -21,5 +21,5 @@ Obs 4.: Python (pip), Python2 (pip2), Python3 (pip3).
 git clone https://github.com/aXR6/Scan_Rede
 cd Scan_Rede/
 chmod 777 Scan_Rede.sh
-./Scan_Rede.sh
+./scan_rede.sh
 ```
