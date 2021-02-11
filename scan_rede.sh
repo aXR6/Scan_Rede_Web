@@ -1,17 +1,43 @@
 #!/bin/bash 
 clear
 
+opt="/opt/Photon"
+
 echo -e "\033[32;1mOnde nós estamos?\033[m"
 read local
+
+echo -e "\033[32;1mVerificando se o NMAP está instalado...\033[m"
+apt-get install nmap -y
+
+echo -e "\033[32;1mVerificando se o NIKTO está instalado...\033[m"
+apt-get install nikto -y
+
+if [ -e $opt ]
+	then
+		echo -e "\033[32;1mVamos instalar a biblioteca - TLD no Python\033[m"
+		echo -e "\033[32;1mVocê usa o pip, pip2 ou pip3?\033[m"
+			read pipinstall
+			$pipinstall install tld
+	else
+		echo -e "\033[32;1mVerificando se o GIT está instalado.\033[m"
+			apt update
+			apt install git -y
+			cd "/opt"
+		echo -e "\033[32;1mClonando o repositorio do Python no GitHub\033[m"
+			git clone https://github.com/s0md3v/Photon.git
+		echo -e "\033[32;1mVamos instalar a biblioteca - TLD no Python\033[m"
+		echo -e "\033[32;1mVocê usa o pip, pip2 ou pip3?\033[m"
+			read pipinstall
+			$pipinstall install tld
+	fi
 
 clear
 
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
 
-dir="/home/toolx/Documentos/$data/"
+dir="/home/$SUDO_USER/Documentos/$data/"
 dir2="$dir/$local"
-opt="/opt/Photon"
 
 mkdir $dir
 mkdir $dir2
