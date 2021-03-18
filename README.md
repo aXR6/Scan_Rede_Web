@@ -1,4 +1,4 @@
-# Sobre: Script para identificar todos os dispositivos OnLine na rede (Informações detalhadas). <br>
+# Sobre: Script para identificar todos os dispositivos OnLine na rede (Informações detalhadas), vulnerabilidades e arquivos ocultos na web. <br>
 
 <b># Scan_Rede<b><br>
 Linkedin: https://www.linkedin.com/in/thalles-canela/ <br>
