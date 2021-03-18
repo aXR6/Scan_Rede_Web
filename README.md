@@ -26,6 +26,6 @@ Link: https://github.com/m3n0sd0n4ld/uDork
 ```
 git clone https://github.com/aXR6/Scan_Rede_Web
 cd Scan_Rede/
-chmod 777 Scan_Rede.sh
+chmod 777 scan_Rede_Web.sh
 ./scan_rede.sh
 ```
