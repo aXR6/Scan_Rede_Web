@@ -17,8 +17,7 @@ Obs 3.: EXECUTE O SCRIPT COMO USUARIO ROOT.
 Obs 4.: Python (pip), Python2 (pip2), Python3 (pip3).
 ```
 
-# ATENÇÃO. Depois que você instalar os componentes e as ferramentas, você vai precisar configurar o uDork.
-# Siga os passos em:
+# ATENÇÃO. Depois que você instalar os componentes e as ferramentas, você vai precisar configurar o uDork. Siga os passos em:
 ```
 Link: https://github.com/m3n0sd0n4ld/uDork
 ```
