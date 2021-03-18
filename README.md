@@ -24,7 +24,7 @@ Link: https://github.com/m3n0sd0n4ld/uDork
 
 # Basta apenas clonar o repositório, dar permissão e executar o script.
 ```
-git clone https://github.com/aXR6/Scan_Rede
+git clone https://github.com/aXR6/Scan_Rede_Web
 cd Scan_Rede/
 chmod 777 Scan_Rede.sh
 ./scan_rede.sh
