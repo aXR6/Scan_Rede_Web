@@ -17,10 +17,10 @@ toolxmenu(){
    select opt in "${options[@]}"
    do
       case $opt in
-         "Instalação dos componentes (1º Faça)")
+         "(1º Faça)-Instalação dos componentes")
             INSTALLTOOLS
             ;;
-         "Instalação das ferramentas (2º Faça)")
+         "(2º Faça)-Instalação das ferramentas")
             INSTALLCOMP
             ;;
          "Testar a Rede (Toda a REDE)")
@@ -52,10 +52,10 @@ TOOLXSITE(){
    select opt in "${options[@]}"
    do
       case $opt in
-         "Informe o Nome da lista (ex.: lst1.txt)")
+         "(1º Faça)-Informe o Nome da lista (ex.: lst1.txt)")
             LSTFILE
             ;;
-         "Informe o Diretorio da Lista (ex.: $DirAtual)")
+         "(2º Faça)-Informe o Diretorio da Lista (ex.: $DirAtual)")
             DIRFILE
             ;;
          "Testar a lista com o NIKTO")
