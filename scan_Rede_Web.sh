@@ -233,7 +233,11 @@ NMAP()
       #Percorrendo todos os valores do ARRAY
       for linha in "${ARRAY[@]}"
         do
-          mkdir $dir2/$linha/  
+          mkdir $dir2/$linha/ 
+          echo -e "\033[32;1m ==== ($lstsites) - Gerar 20 IPs aleatorios e desconsiderar IPS e IDS ==== :=> $linha \033[m"
+          echo " "
+	  nmap -D RND:20 --open -sS -p- $linha -oA $dir2/$linha/PortasAbertas
+          echo " "
           echo -e "\033[32;1m ==== ($lstsites) - Slow comprehensive scan ==== :=> $linha \033[m"
           echo " "
           nmap -sS -sU -T4 -A -v -PE -PP -PS80,443,3306,8080 -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA $dir2/$linha/ShowcomprehensiveSCAN $linha
