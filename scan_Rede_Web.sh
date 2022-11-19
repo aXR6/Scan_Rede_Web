@@ -152,7 +152,6 @@ if [ -e $DirAtual/uDork ]
     echo -e "\033[32;1mClonando o repositorio do Fast-Google-Dorks-Scan\033[m"
     git clone https://github.com/m3n0sd0n4ld/uDork
   fi
-}
 
 if [ -e $DirAtual/sslyze ]
   then
