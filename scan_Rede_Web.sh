@@ -160,8 +160,8 @@ if [ -e $DirAtual/sslyze ]
     cd $DirAtual
     echo -e "\033[32;1mClonando o repositorio do sslyze\033[m"
     # git clone https://github.com/nabla-c0d3/sslyze
-    $pipinstall install --upgrade pip setuptools wheel
-    $pipinstall install --upgrade sslyze
+    pip install --upgrade pip setuptools wheel
+    pip install --upgrade sslyze
   fi
 }
 
