@@ -159,7 +159,7 @@ INSTALLCOMP()
 echo -e "\033[32;1mVamos instalar a biblioteca - TLD no Python\033[m"
 echo -e "\033[32;1mVocê usa o pip, pip2 ou pip3?\033[m"
 read pipinstall
-$pipinstall install tld
+$pipinstall install tld requests requests[socks] urllib3 tld
 
 echo -e "\033[32;1mVerificando se o GIT está instalado.\033[m"
 apt update
