@@ -166,6 +166,9 @@ if [ -e $DirAtual/sslyze ]
     pip install --upgrade pip setuptools wheel
     pip install --upgrade sslyze
   fi
+
+   bash chmod -R 777 $DirAtual*
+
 }
 
 INSTALLCOMP()
@@ -373,7 +376,6 @@ uDork()
           mkdir $dir2/$linha/
           echo -e "\033[32;1m ==== ($lstsites) - uDork  ==== :=> $linha \033[m"
           echo -e "\033[32;1m Analisando o site ... \033[m"
-          $DirAtual;
           bash uDork/uDork.sh $linha -e all -p 5 ls --color=always | aha --black --title 'uDork_ArquivosOcultos' > $dir2/$linha/ArquivosOcultos.html
           bash uDork/uDork.sh $linha -t all -p 5 ls --color=always | aha --black --title 'uDork_ErrosIndicados' > $dir2/$linha/ErrosIndicados.html
           bash uDork/uDork.sh $linha -u all -p 5 ls --color=always | aha --black --title 'uDork_StringNasURLs' > $dir2/$linha/StringNasURLs.html
