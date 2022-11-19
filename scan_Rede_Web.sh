@@ -73,6 +73,9 @@ TOOLXSITE(){
          "Testar a lista com o uDork")
             uDork
             ;;
+         "Testar a lista com o sslyze")
+            sslyze
+            ;;
          "SAIR")
             break
             ;;
