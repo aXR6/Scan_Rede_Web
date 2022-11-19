@@ -154,6 +154,18 @@ if [ -e $DirAtual/uDork ]
   fi
 }
 
+if [ -e $DirAtual/sslyze ]
+  then
+    echo -e "\033[32;1msslyze - Instalado!\033[m"
+  else
+    cd $DirAtual
+    echo -e "\033[32;1mClonando o repositorio do sslyze\033[m"
+    # git clone https://github.com/nabla-c0d3/sslyze
+    $pipinstall install --upgrade pip setuptools wheel
+    $pipinstall install --upgrade sslyze
+  fi
+}
+
 INSTALLCOMP()
 {
 echo -e "\033[32;1mVamos instalar a biblioteca - TLD no Python\033[m"
@@ -363,6 +375,29 @@ uDork()
           bash uDork/uDork.sh $linha -t all -p 5 ls --color=always | aha --black --title 'uDork_ErrosIndicados' > $dir2/$linha/ErrosIndicados.html
           bash uDork/uDork.sh $linha -u all -p 5 ls --color=always | aha --black --title 'uDork_StringNasURLs' > $dir2/$linha/StringNasURLs.html
           bash uDork/uDork.sh $linha -g all -p 5 ls --color=always | aha --black --title 'uDork_ResultDork' > $dir2/$linha/ResultDork.html
+          echo " "
+          #Removendo valor lido
+          #unset ARRAY
+          #Removendo o arquivo lido ($lstsites.txt)
+          #rm -r $dir2/$lstsites.txt
+      done
+}
+
+sslyze()
+{
+    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
+    while read line
+    do
+       [[ "$line" != '' ]] && ARRAY+=("$line")
+    done < $dirlista/$lstsites
+
+      #Percorrendo todos os valores do ARRAY
+      for linha in "${ARRAY[@]}"
+        do
+          mkdir $dir2/$linha/
+          echo -e "\033[32;1m ==== ($lstsites) - sslyzev  ==== :=> $linha \033[m"
+          echo -e "\033[32;1m Analisando o site ... \033[m"
+          python -m sslyze $linha ls --color=always | aha --black --title 'Dados_Sobre_Certificado' > $dir2/$linha/DadosSobreCertf.html
           echo " "
           #Removendo valor lido
           #unset ARRAY
