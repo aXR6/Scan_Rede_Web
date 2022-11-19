@@ -3,7 +3,7 @@
 DirAtual="${PWD}"
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
-dir="/home/$SUDO_USER/Documentos/$data"
+dir="/home/$SUDO_USER/Documents/$data"
 mkdir $dir
 
 ##toolxmenu##
