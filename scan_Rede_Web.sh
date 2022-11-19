@@ -48,7 +48,7 @@ TOOLXSITE(){
    PS3="└──> ToolXMenu : "
    options=("(1º Faça)-Informe o Nome da lista (ex.: lst1.txt)" "(2º Faça)-Informe o Diretorio da Lista (ex.: $DirAtual)" 
     "Testar a lista com o NIKTO" "Testar a lista com o NMAP" "Testar a lista com o PHOTON" 
-    "Testar a lista com o Fast-Google-Dorks-Scan" "Testar a lista com o uDork" "SAIR")
+    "Testar a lista com o Fast-Google-Dorks-Scan" "Testar a lista com o uDork" "Testar a lista com o sslyze" "SAIR")
    select opt in "${options[@]}"
    do
       case $opt in
