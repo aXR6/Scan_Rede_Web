@@ -166,9 +166,6 @@ if [ -e $DirAtual/sslyze ]
     pip install --upgrade pip setuptools wheel
     pip install --upgrade sslyze
   fi
-
-   bash chmod -R 777 $DirAtual*
-
 }
 
 INSTALLCOMP()
@@ -353,7 +350,7 @@ FastGoogleDorksScan()
           mkdir $dir2/$linha/
           echo -e "\033[32;1m ==== ($lstsites) - Fast-Google-Dorks-Scan  ==== :=> $linha \033[m"
           echo -e "\033[32;1m Analisando o site ... \033[m"
-          bash Fast-Google-Dorks-Scan/FGDS.sh $linha ls --color=always | aha --black --title 'FGDS' > $dir2/$linha/FGDS.html
+          bash $DirAtual/Fast-Google-Dorks-Scan/FGDS.sh $linha ls --color=always | aha --black --title 'FGDS' > $dir2/$linha/FGDS.html
           echo " "
           #Removendo valor lido
           #unset ARRAY
