@@ -430,9 +430,11 @@ fi
     echo "Gateway ...........: $GW"
     echo "Local de analise...: $lstsites"
     echo " "
-	 NMAP
-    NIKTO
-    SSLYZE
+   NIKTO
+   NMAP
+   GOBUSTER
+   HYDRA
+   SSLYZE
   fi
 done
 
