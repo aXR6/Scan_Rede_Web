@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 DirAtual="${PWD}"
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
-dir="/home/$SUDO_USER/Documents/$data"
+dir="/home/$USER/Documentos/$data"
+# Para Kali Linux
+# dir="/home/$SUDO_USER/Documents/$data"
 mkdir $dir
 
 ##toolxmenu##
@@ -13,7 +15,7 @@ toolxmenu(){
    CLEARMEN
    PS3="└──> ToolXMenu : "
    options=("(1º Faça)-Instalação dos componentes" "(2º Faça)-Instalação das ferramentas" 
-    "Testar a Rede (Toda a REDE)" "Testar Sites (Lista de SITES)" "SAIR")
+    "Testar a Rede (Toda a REDE)" "Testar Sites (Lista de SITES)" "Baixar WordList Oficial Kali Linux" "SAIR")
    select opt in "${options[@]}"
    do
       case $opt in
@@ -28,6 +30,9 @@ toolxmenu(){
             ;;
          "Testar Sites (Lista de SITES)")
             TOOLXSITE
+            ;;
+         "Baixar WordList Oficial Kali Linux")
+            SECLIST
             ;;
          "SAIR")
             break
@@ -47,8 +52,7 @@ TOOLXSITE(){
    CLEARMEN
    PS3="└──> ToolXMenu : "
    options=("(1º Faça)-Informe o Nome da lista (ex.: lst1.txt)" "(2º Faça)-Informe o Diretorio da Lista (ex.: $DirAtual)" 
-    "Testar a lista com o NIKTO" "Testar a lista com o NMAP" "Testar a lista com o PHOTON" 
-    "Testar a lista com o Fast-Google-Dorks-Scan" "Testar a lista com o uDork" "Testar a lista com o sslyze" "SAIR")
+    "Testar a lista com o NIKTO" "Testar a lista com o NMAP" "Testar a lista com o GOBUSTER" "Testar a lista com o Hydra" "Testar a lista com o SSLYZE" "SAIR")
    select opt in "${options[@]}"
    do
       case $opt in
@@ -64,17 +68,14 @@ TOOLXSITE(){
          "Testar a lista com o NMAP")
             NMAP
             ;;
-         "Testar a lista com o PHOTON")
-            PHOTON
+         "Testar a lista com o GOBUSTER")
+            GOBUSTER
             ;;
-         "Testar a lista com o Fast-Google-Dorks-Scan")
-            FastGoogleDorksScan
+         "Testar a lista com o Hydra")
+            HYDRA
             ;;
-         "Testar a lista com o uDork")
-            uDork
-            ;;
-         "Testar a lista com o sslyze")
-            sslyze
+         "Testar a lista com o SSLYZE")
+            SSLYZE
             ;;
          "SAIR")
             break
@@ -125,36 +126,11 @@ apt-get install nmap -y
 echo -e "\033[32;1mVerificando se o NIKTO está instalado...\033[m"
 apt-get install nikto -y
 
-echo -e "\033[32;1mVerificando se o AHA está instalado...\033[m"
-apt-get install aha
+echo -e "\033[32;1mVerificando se o GOBUSTER está instalado...\033[m"
+apt-get install gobuster -y
 
-
-if [ -e $DirAtual/Photon ]
-  then
-    echo -e "\033[32;1mPhoton - Instalado!\033[m"
-  else
-    cd $DirAtual
-    echo -e "\033[32;1mClonando o repositorio do Python no GitHub\033[m"
-    git clone https://github.com/s0md3v/Photon.git
-  fi
-
-if [ -e $DirAtual/Fast-Google-Dorks-Scan ]
-  then
-    echo -e "\033[32;1mFast-Google-Dorks-Scan - Instalado!\033[m"
-  else
-    cd $DirAtual
-    echo -e "\033[32;1mClonando o repositorio do Fast-Google-Dorks-Scan\033[m"
-    git clone https://github.com/IvanGlinkin/Fast-Google-Dorks-Scan
-  fi
-
-if [ -e $DirAtual/uDork ]
-  then
-    echo -e "\033[32;1muDork - Instalado!\033[m"
-  else
-    cd $DirAtual
-    echo -e "\033[32;1mClonando o repositorio do Fast-Google-Dorks-Scan\033[m"
-    git clone https://github.com/m3n0sd0n4ld/uDork
-  fi
+echo -e "\033[32;1mVerificando se o HYDRA está instalado...\033[m"
+apt-get install hydra -y
 
 if [ -e $DirAtual/sslyze ]
   then
@@ -168,12 +144,20 @@ if [ -e $DirAtual/sslyze ]
   fi
 }
 
+SECLIST()
+{
+echo -e "\033[32;1mBaixar WordList Oficial Kali Linux.\033[m"
+cd $DirAtual
+git clone --depth 1 https://github.com/danielmiessler/SecLists.git
+ls SecLists/
+}
+
 INSTALLCOMP()
 {
 echo -e "\033[32;1mVamos instalar a biblioteca - TLD no Python\033[m"
 echo -e "\033[32;1mVocê usa o pip, pip2 ou pip3?\033[m"
 read pipinstall
-$pipinstall install tld requests requests[socks] urllib3 tld
+$pipinstall install tld
 
 echo -e "\033[32;1mVerificando se o GIT está instalado.\033[m"
 apt update
@@ -250,7 +234,7 @@ NMAP()
           mkdir $dir2/$linha/ 
           echo -e "\033[32;1m ==== ($lstsites) - Gerar 20 IPs aleatorios e desconsiderar IPS e IDS ==== :=> $linha \033[m"
           echo " "
-	  nmap -D RND:20 --open -sS -p- $linha -oA $dir2/$linha/PortasAbertas
+	       nmap -D RND:20 --open -sS -p- $linha -oA $dir2/$linha/PortasAbertas
           echo " "
           echo -e "\033[32;1m ==== ($lstsites) - Slow comprehensive scan ==== :=> $linha \033[m"
           echo " "
@@ -303,7 +287,7 @@ NMAP()
     done
 }
 
-PHOTON()
+GOBUSTER()
 {
     #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
     while read line
@@ -315,42 +299,12 @@ PHOTON()
       for linha in "${ARRAY[@]}"
         do
           mkdir $dir2/$linha/
-          echo -e "\033[32;1m ==== ($lstsites) - Photon Full Scan ==== :=> $linha \033[m"
-          echo " "
-          python3 $DirAtual/Photon/photon.py -u $linha -l 3 -t 100 --wayback -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha --clone -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha -l 3 -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha -t 10 -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha -d 2 -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha --timeout=4 -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha -c "PHPSESSID=u5423d78fqbaju9a0qke25ca87" -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha --user-agent "curl/7.35.0,Wget/1.15 (linux-gnu)" -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha --regex "\d{10}" -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha --wayback -o $dir2/$linha
-          python3 $DirAtual/Photon/photon.py -u $linha --keys -o $dir2/$linha
-          #Removendo valor lido
-          #unset ARRAY
-          #Removendo o arquivo lido ($lstsites.txt)
-          #rm -r $dir2/$lstsites.txt
-      done
-}
-
-FastGoogleDorksScan()
-{
-    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
-    while read line
-    do
-       [[ "$line" != '' ]] && ARRAY+=("$line")
-    done < $dirlista/$lstsites
-
-      #Percorrendo todos os valores do ARRAY
-      for linha in "${ARRAY[@]}"
-        do
-          mkdir $dir2/$linha/
-          echo -e "\033[32;1m ==== ($lstsites) - Fast-Google-Dorks-Scan  ==== :=> $linha \033[m"
+          echo -e "\033[32;1m ==== ($lstsites) - GOBUSTER  ==== :=> $linha \033[m"
           echo -e "\033[32;1m Analisando o site ... \033[m"
-          bash $DirAtual/Fast-Google-Dorks-Scan/FGDS.sh $linha ls --color=always | aha --black --title 'FGDS' > $dir2/$linha/FGDS.html
+          gobuster -u $linha -w $DirAtual/SecLists/Discovery/Web-Content/common.txt -q -n -e -o $dir2/$linha/Rel1_$linha
+          gobuster -m dns -t 100 -u $linha -w $DirAtual/SecLists/Discovery/DNS/namelist.txt -o $dir2/$linha/Rel2_$linha
+          gobuster -m dns -u $linha -w $DirAtual/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -o $dir2/$linha/Rel3_$linha
+          gobuster -m dns -u $linha -w $DirAtual/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -i -o $dir2/$linha/Rel4_$linha
           echo " "
           #Removendo valor lido
           #unset ARRAY
@@ -359,8 +313,9 @@ FastGoogleDorksScan()
       done
 }
 
-uDork()
+HYDRA()
 {
+    dirpass="$DirAtual/SecLists/Usernames/top-usernames-shortlist.txt"
     #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
     while read line
     do
@@ -371,13 +326,12 @@ uDork()
       for linha in "${ARRAY[@]}"
         do
           mkdir $dir2/$linha/
-          echo -e "\033[32;1m ==== ($lstsites) - uDork  ==== :=> $linha \033[m"
+          echo -e "\033[32;1m ==== ($lstsites) - HYDRA  ==== :=> $linha \033[m"
           echo -e "\033[32;1m Analisando o site ... \033[m"
-          bash uDork/uDork.sh $linha -e all -p 5 ls --color=always | aha --black --title 'uDork_ArquivosOcultos' > $dir2/$linha/ArquivosOcultos.html
-          bash uDork/uDork.sh $linha -t all -p 5 ls --color=always | aha --black --title 'uDork_ErrosIndicados' > $dir2/$linha/ErrosIndicados.html
-          bash uDork/uDork.sh $linha -u all -p 5 ls --color=always | aha --black --title 'uDork_StringNasURLs' > $dir2/$linha/StringNasURLs.html
-          bash uDork/uDork.sh $linha -g all -p 5 ls --color=always | aha --black --title 'uDork_ResultDork' > $dir2/$linha/ResultDork.html
-          echo " "
+            while read user; do
+               hydra -l $user -P $DirAtual/SecLists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt $linha ftp
+               hydra -l $user -P $DirAtual/SecLists/Passwords/Common-Credentials/10k-most-common.txt $linha ssh
+            done < $dirpass
           #Removendo valor lido
           #unset ARRAY
           #Removendo o arquivo lido ($lstsites.txt)
@@ -385,7 +339,7 @@ uDork()
       done
 }
 
-sslyze()
+SSLYZE()
 {
     #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
     while read line
@@ -399,8 +353,7 @@ sslyze()
           mkdir $dir2/$linha/
           echo -e "\033[32;1m ==== ($lstsites) - sslyzev  ==== :=> $linha \033[m"
           echo -e "\033[32;1m Analisando o site ... \033[m"
-          python -m sslyze $linha ls --color=always | aha --black --title 'Dados_Sobre_Certificado' > $dir2/$linha/DadosSobreCertf.html
-          echo " "
+          python -m sslyze $linha > $dir2/$linha/DadosSobreCertf_$linha.html
           #Removendo valor lido
           #unset ARRAY
           #Removendo o arquivo lido ($lstsites.txt)
@@ -477,11 +430,9 @@ fi
     echo "Gateway ...........: $GW"
     echo "Local de analise...: $lstsites"
     echo " "
-	NMAP
+	 NMAP
     NIKTO
-    PHOTON
-    FastGoogleDorksScan
-    uDork
+    SSLYZE
   fi
 done
 
