@@ -211,8 +211,8 @@ NIKTO()
           mkdir $dir2/$linha/
           echo -e "\033[32;1m ==== ($lstsites) - Nikto Full Scan ==== :=> $linha \033[m"
           echo " "
-          nikto -Tuning 1234567890abc -h $linha -p 80,8080,443 -o $dir2/$linha/NIKTO_Tuning.html
-          nikto -C all -h $linha -p 80,8080,443 -o $dir2/$linha/NIKTO_CALL.html
+          nikto -Tuning 1234567890abc -h $linha -o $dir2/$linha/NIKTO_Tuning.html
+          nikto -C all -h $linha -o $dir2/$linha/NIKTO_CALL.html
           #Removendo valor lido
           #unset ARRAY
           #Removendo o arquivo lido ($lstsites.txt)
@@ -238,7 +238,8 @@ NMAP()
           echo " "
           echo -e "\033[32;1m ==== ($lstsites) - Slow comprehensive scan ==== :=> $linha \033[m"
           echo " "
-          nmap -sS -sU -T4 -A -v -PE -PP -PS80,443,3306,8080 -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA $dir2/$linha/ShowcomprehensiveSCAN $linha
+         #nmap -sS -sU -T4 -A -v -PE -PP -PS80,443,3306,8080 -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA $dir2/$linha/ShowcomprehensiveSCAN $linha
+          nmap -sS -sU -T4 -A -v -PE -PP -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA $dir2/$linha/ShowcomprehensiveSCAN $linha
           echo " "
           echo -e "\033[32;1m ==== ($lstsites) - Dados interessantes em ==== :=> $linha \033[m"
           echo " "
