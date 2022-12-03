@@ -1,5 +1,3 @@
-#!/usr/bin/bash
-
 DirAtual="${PWD}"
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
@@ -14,8 +12,7 @@ mkdir $dir
 toolxmenu(){
    CLEARMEN
    PS3="└──> ToolXMenu : "
-   options=("(1º Faça)-Instalação dos componentes" "(2º Faça)-Instalação das ferramentas" 
-    "Testar a Rede (Toda a REDE)" "Testar Sites (Lista de SITES)" "Baixar WordList Oficial Kali Linux" "SAIR")
+   options=("(1º Faça)-Instalação dos componentes" "(2º Faça)-Instalação das ferramentas" "Testar a Rede (Toda a REDE)" "Testar Sites (Lista de SITES)" "Baixar WordList Oficial Kali Linux" "SAIR")
    select opt in "${options[@]}"
    do
       case $opt in
@@ -51,8 +48,8 @@ toolxmenu(){
 TOOLXSITE(){
    CLEARMEN
    PS3="└──> ToolXMenu : "
-   options=("(1º Faça)-Informe o Nome da lista (ex.: lst1.txt)" "(2º Faça)-Informe o Diretorio da Lista (ex.: $DirAtual)" 
-    "Testar a lista com o NIKTO" "Testar a lista com o NMAP" "Testar a lista com o GOBUSTER" "Testar a lista com o Hydra" "Testar a lista com o SSLYZE" "SAIR")
+   options=("(1º Faça)-Informe o Nome da lista (ex.: lst1.txt)" "(2º Faça)-Informe o Diretorio da Lista (ex.: $DirAtual)" "Testar a lista com o NIKTO"
+   "Testar a lista com o NMAP" "Testar a lista com o GOBUSTER" "Testar a lista com o Hydra" "Testar a lista com o SSLYZE" "Testar a lista com TODAS" "SAIR")
    select opt in "${options[@]}"
    do
       case $opt in
@@ -76,6 +73,9 @@ TOOLXSITE(){
             ;;
          "Testar a lista com o SSLYZE")
             SSLYZE
+            ;;
+         "Testar a lista com TODAS")
+            TODAS
             ;;
          "SAIR")
             break
@@ -195,6 +195,15 @@ wc -l $dirlista'/'$lstsites
 CLEARMEN()
 {
 unset ARRAY
+}
+
+TODAS()
+{
+   NIKTO
+   NMAP
+   GOBUSTER
+   HYDRA
+   SSLYZE
 }
 
 NIKTO()
