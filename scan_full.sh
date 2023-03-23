@@ -15,11 +15,12 @@ toolxmenu() {
    CLEARMEN
    PS3=("└──> ToolXMenu : ")
    options=(
-   	"(1º Faça)-Instalação dos componentes"
+   	"(1º Faça)-Instalação dos comp/onentes"
    	"(2º Faça)-Instalação das ferramentas"
    	"Testar a Rede (Toda a REDE)"
    	"Testar Sites (Lista de SITES)"
    	"Baixar WordList Oficial Kali Linux"
+   	"Informações sobre Hardware e SO"
    	"SAIR")
 	    select opt in "${options[@]}"
 	    do
@@ -38,6 +39,9 @@ toolxmenu() {
 		    ;;
 		 "Baixar WordList Oficial Kali Linux")
 		    SECLIST
+		    ;;
+		 "Informações sobre Hardware e SO")
+		    INFOMAQUINA
 		    ;;
 		 "SAIR")
 		    exit 0
@@ -137,13 +141,45 @@ TOOLXREDE() {
 ################
 ##/TOOLXREDE##
 
+INFOMAQUINA()
+{
+echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
+
+echo -e "\033[1;31m:=> Informações do CPU \033[0m"
+cat /proc/cpuinfo | grep "model name\|vendor_id\|cpu cores"
+
+echo -e "\033[1;31m:=> Informações da memória \033[0m"
+free -m
+
+echo -e "\033[1;31m:=> Informações dos discos \033[0m"
+df -h
+
+echo -e "\033[1;31m:=> Informações dos dispositivos PCI \033[0m"
+lspci
+
+echo -e "\033[1;31m:=> Informações dos dispositivos USB \033[0m"
+lsusb
+
+echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
+dmidecode -t 2
+
+echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
+dmidecode -t 0
+
+echo -e "\033[1;31m:=> Informações do sistema operacional \033[0m"
+lsb_release -a
+
+echo -e "\033[1;31m:=> Informações do kernel \033[0m"
+uname -a
+}
+
 INSTALLTOOLS()
 {
 echo -e "\033[32;1mUpdate do Sistema - Sem instalar atualizações\033[m"
 apt update && apt upgrade -y
 
 echo -e "\033[32;1mVerificando se o Net-Tools está instalado...\033[m"
-apt install -y net-tools
+apt install -y net-tools curl
 
 echo -e "\033[32;1mVerificando se o Python 3 está instalado...\033[m"
 apt install -y python3-pip
