@@ -1,43 +1,58 @@
-DirAtual="${PWD}"
+#!/bin/bash
+
+DirAtual=("${PWD}")
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
-dir="/home/$USER/Documentos/$data"
+#dir=("/home/$USER/Documentos/$data")
 # Para Kali Linux
-# dir="/home/$SUDO_USER/Documents/$data"
+dir=("/home/$SUDO_USER/Documentos/$data")
 mkdir $dir
 
 ##toolxmenu##
 ##################
 ##START toolxmenu##
-toolxmenu(){
+toolxmenu() {
    CLEARMEN
-   PS3="└──> ToolXMenu : "
-   options=("(1º Faça)-Instalação dos componentes" "(2º Faça)-Instalação das ferramentas" "Testar a Rede (Toda a REDE)" "Testar Sites (Lista de SITES)" "Baixar WordList Oficial Kali Linux" "SAIR")
-   select opt in "${options[@]}"
-   do
-      case $opt in
-         "(1º Faça)-Instalação dos componentes")
-            INSTALLTOOLS
-            ;;
-         "(2º Faça)-Instalação das ferramentas")
-            INSTALLCOMP
-            ;;
-         "Testar a Rede (Toda a REDE)")
-            TOOLXREDE
-            ;;
-         "Testar Sites (Lista de SITES)")
-            TOOLXSITE
-            ;;
-         "Baixar WordList Oficial Kali Linux")
-            SECLIST
-            ;;
-         "SAIR")
-            break
-            ;;
-         *) echo "A opção ($REPLY) não existe.";;
+   PS3=("└──> ToolXMenu : ")
+   options=(
+   	"(1º Faça)-Instalação dos comp/onentes"
+   	"(2º Faça)-Instalação das ferramentas"
+   	"Testar a Rede (Toda a REDE)"
+   	"Testar Sites (Lista de SITES)"
+   	"Baixar WordList Oficial Kali Linux"
+   	"Informações sobre Hardware e SO"
+   	"SAIR")
+	    select opt in "${options[@]}"
+	    do
+	      case $opt in
+		 "(1º Faça)-Instalação dos componentes")
+		    INSTALLTOOLS
+		    ;;
+		 "(2º Faça)-Instalação das ferramentas")
+		    INSTALLCOMP
+		    ;;
+		 "Testar a Rede (Toda a REDE)")
+		    TOOLXREDE
+		    ;;
+		 "Testar Sites (Lista de SITES)")
+		    TOOLXSITE
+		    ;;
+		 "Baixar WordList Oficial Kali Linux")
+		    SECLIST
+		    ;;
+		 "Informações sobre Hardware e SO")
+		    INFOMAQUINA
+		    ;;
+		 "SAIR")
+		    exit 0
+		    ;;
+		 *) 
+		    echo "A opção ($REPLY) não existe."
+		    ;;
       esac
-   done
+    done
 }
+
 ##END toolxmenu##
 ################
 ##/toolxmenu##
@@ -45,11 +60,19 @@ toolxmenu(){
 ##TOOLXSITE##
 ##################
 ##START TOOLXSITE##
-TOOLXSITE(){
+TOOLXSITE() {
    CLEARMEN
-   PS3="└──> ToolXMenu : "
-   options=("(1º Faça)-Informe o Nome da lista (ex.: lst1.txt)" "(2º Faça)-Informe o Diretorio da Lista (ex.: $DirAtual)" "Testar a lista com o NIKTO"
-   "Testar a lista com o NMAP" "Testar a lista com o GOBUSTER" "Testar a lista com o Hydra" "Testar a lista com o SSLYZE" "Testar a lista com TODAS" "SAIR")
+   PS3=("└──> ToolXMenu : ")
+   options=(
+   	"(1º Faça)-Informe o Nome da lista (ex.: lst1.txt)"
+   	"(2º Faça)-Informe o Diretorio da Lista (ex.: $DirAtual)"
+   	"Testar a lista com o NIKTO"
+   	"Testar a lista com o NMAP"
+   	"Testar a lista com o GOBUSTER"
+   	"Testar a lista com o Hydra"
+   	"Testar a lista com o SSLYZE"
+   	"Testar a lista com TODAS"
+   	"SAIR")
    select opt in "${options[@]}"
    do
       case $opt in
@@ -77,12 +100,12 @@ TOOLXSITE(){
          "Testar a lista com TODAS")
             TODAS
             ;;
-         "SAIR")
-            break
+	 "SAIR")
+	    break
             ;;
          *) echo "A opção ($REPLY) não existe.";;
       esac
-   done
+     done
 }
 ##END TOOLXSITE##
 ################
@@ -91,10 +114,13 @@ TOOLXSITE(){
 ##TOOLXREDE##
 ##################
 ##START TOOLXREDE##
-TOOLXREDE(){
+TOOLXREDE() {
    CLEARMEN
-   PS3="└──> ToolXMenu : "
-   options=("Onde nós estamos?" "Verificar a rede" "SAIR")
+   PS3=("└──> ToolXMenu : ")
+   options=(
+   	"Onde nós estamos?"
+   	"Verificar a rede"
+   	"SAIR")
    select opt in "${options[@]}"
    do
       case $opt in
@@ -104,33 +130,71 @@ TOOLXREDE(){
          "Verificar a rede")
             SCANREDE
             ;;
-         "SAIR")
-            break
+	 "SAIR")
+	    break
             ;;
          *) echo "A opção ($REPLY) não existe.";;
       esac
-   done
+      done
 }
 ##END TOOLXREDE##
 ################
 ##/TOOLXREDE##
 
+INFOMAQUINA()
+{
+echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
+
+echo -e "\033[1;31m:=> Informações do CPU \033[0m"
+cat /proc/cpuinfo | grep "model name\|vendor_id\|cpu cores"
+
+echo -e "\033[1;31m:=> Informações da memória \033[0m"
+free -m
+
+echo -e "\033[1;31m:=> Informações dos discos \033[0m"
+df -h
+
+echo -e "\033[1;31m:=> Informações dos dispositivos PCI \033[0m"
+lspci
+
+echo -e "\033[1;31m:=> Informações dos dispositivos USB \033[0m"
+lsusb
+
+echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
+dmidecode -t 2
+
+echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
+dmidecode -t 0
+
+echo -e "\033[1;31m:=> Informações do sistema operacional \033[0m"
+lsb_release -a
+
+echo -e "\033[1;31m:=> Informações do kernel \033[0m"
+uname -a
+}
+
 INSTALLTOOLS()
 {
 echo -e "\033[32;1mUpdate do Sistema - Sem instalar atualizações\033[m"
-apt-get update
+apt update && apt upgrade -y
+
+echo -e "\033[32;1mVerificando se o Net-Tools está instalado...\033[m"
+apt install -y net-tools curl
+
+echo -e "\033[32;1mVerificando se o Python 3 está instalado...\033[m"
+apt install -y python3-pip
 
 echo -e "\033[32;1mVerificando se o NMAP está instalado...\033[m"
-apt-get install nmap -y
+apt install -y nmap
 
 echo -e "\033[32;1mVerificando se o NIKTO está instalado...\033[m"
-apt-get install nikto -y
+apt install -y nikto
 
 echo -e "\033[32;1mVerificando se o GOBUSTER está instalado...\033[m"
-apt-get install gobuster -y
+apt install -y gobuster
 
 echo -e "\033[32;1mVerificando se o HYDRA está instalado...\033[m"
-apt-get install hydra -y
+apt install -y hydra
 
 if [ -e $DirAtual/sslyze ]
   then
