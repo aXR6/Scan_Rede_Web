@@ -1,20 +1,11 @@
 #!/bin/bash
 
-<<<<<<< HEAD
 DirAtual=("${PWD}")
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
 #dir=("/home/$USER/Documentos/$data")
 # Para Kali Linux
 dir=("/home/$SUDO_USER/Documentos/$data")
-=======
-DirAtual="${PWD}"
-data=$(date +"%d_%m_%y_%A")
-t=$(date +"%T")
-#dir="/home/$USER/Documentos/$data"
-# Para Kali Linux
-dir="/home/$SUDO_USER/Documentos/$data"
->>>>>>> 8360eff82ba9acaacd2e2bac611097eea9024c9e
 mkdir $dir
 
 ##toolxmenu##
