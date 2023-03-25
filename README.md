@@ -8,3 +8,19 @@ Github:   https://github.com/ThallesCanela <br>
 Github:   https://github.com/aXR6 <br>
 Twitter:  https://twitter.com/Axr6S <br>
 Padim:    https://www.padrim.com.br/aXR6CyberSecurity <br>
+
+# Siga a seguinte ordem.
+```
+1 - Install_Docker_Portainer_NextCloud_MariaDB
+2 - Install_No_Ip
+3 - Scan_de_Vull
+
+Dúvidas: https://www.google.com.br
+```
+
+# Objetivo do Script
+```
+O objetivo do script é configurar um servidor para a aplicação NextCloud, utilizando um banco de dados relacional MariaDB.
+Todos os procedimentos são feitos utilizando container, tendo como gerenciador o Docker.
+A ferramenta que irá gerenciar os containers via interface gráfica: Portainer.
+```
