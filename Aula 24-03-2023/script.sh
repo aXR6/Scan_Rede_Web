@@ -10,8 +10,6 @@ apt-get install docker-ce docker-ce-cli containerd.io
 
 docker -version
 
-systemctl status docker
-
 # Instalação do Portainer Server
 # Criando um volume
 docker volume create portainer_data
