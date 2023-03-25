@@ -1,5 +1,5 @@
 #!/bin/bash
-ip_address=$(ifconfig | grep 'inet ' | grep -v '127.0.0.1')
+ip_address=$(ifconfig | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}')
  
 echo -e "\033[1;31m--------------------- PREPARANDO O AMBIENTE --------------------- \033[0m \033[1;31m \033[0m"
 apt update && apt -y install net-tools
