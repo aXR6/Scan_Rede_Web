@@ -19,10 +19,7 @@ docker -version
 echo -e "\033[1;31m[----------------------------------------------------------- INSTALANDO O DOCKER -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
 
 echo -e "\033[1;31m[----------------------------------------------------------- INSTALANDO O PORTAINER -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
-# Instalação do Portainer Server
-# Criando um volume
 docker volume create portainer_data
-# Instalando o Portainer em um container
 docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
 echo -e "\033[1;31m[----------------------------------------------------------- INSTALANDO O PORTAINER -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
 
