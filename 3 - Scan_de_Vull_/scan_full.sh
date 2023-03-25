@@ -120,6 +120,7 @@ TOOLXREDE() {
    options=(
    	"Onde nós estamos?"
    	"Verificar a rede"
+      "Detectar serviços OnLine na rede"
    	"SAIR")
    select opt in "${options[@]}"
    do
@@ -129,6 +130,9 @@ TOOLXREDE() {
             ;;
          "Verificar a rede")
             SCANREDE
+            ;;
+         "Detectar serviços OnLine na rede")
+            DETECTSERVICE
             ;;
 	 "SAIR")
 	    break
@@ -140,6 +144,32 @@ TOOLXREDE() {
 ##END TOOLXREDE##
 ################
 ##/TOOLXREDE##
+
+DETECTSERVICE()
+{
+# Define a função que vai executar o comando nmap e detectar os serviços online
+function detect_services {
+    nmap -n -sP $1 | awk '/is up/ {print up}; {gsub (/\(|\)/,""); up = $NF}' | while read host; do
+        nmap -n -sV $host | grep 'open' | awk '{print $1,$3,$4}' | while read service; do
+            echo "$host: $service"
+        done
+    done
+}
+
+# Define a função que vai buscar os endereços de IP
+function scan_network {
+    for i in $(seq 1 254); do
+        detect_services $1.$i &
+    done
+    wait
+}
+
+# Pede o endereço de IP inicial ao usuário
+read -p "Digite o endereço de IP inicial: " ip_address
+
+# Chama a função scan_network para iniciar a detecção de serviços online
+scan_network $(echo $ip_address | cut -d '.' -f 1-3)
+}
 
 INFOMAQUINA()
 {
