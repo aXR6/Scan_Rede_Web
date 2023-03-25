@@ -15,7 +15,7 @@ toolxmenu() {
    CLEARMEN
    PS3=("└──> ToolXMenu : ")
    options=(
-   	"(1º Faça)-Instalação dos comp/onentes"
+   	"(1º Faça)-Instalação dos componentes"
    	"(2º Faça)-Instalação das ferramentas"
    	"Testar a Rede (Toda a REDE)"
    	"Testar Sites (Lista de SITES)"
@@ -145,32 +145,6 @@ TOOLXREDE() {
 ################
 ##/TOOLXREDE##
 
-DETECTSERVICE()
-{
-# Define a função que vai executar o comando nmap e detectar os serviços online
-function detect_services {
-    nmap -n -sP $1 | awk '/is up/ {print up}; {gsub (/\(|\)/,""); up = $NF}' | while read host; do
-        nmap -n -sV $host | grep 'open' | awk '{print $1,$3,$4}' | while read service; do
-            echo "$host: $service"
-        done
-    done
-}
-
-# Define a função que vai buscar os endereços de IP
-function scan_network {
-    for i in $(seq 1 254); do
-        detect_services $1.$i &
-    done
-    wait
-}
-
-# Pede o endereço de IP inicial ao usuário
-read -p "Digite o endereço de IP inicial: " ip_address
-
-# Chama a função scan_network para iniciar a detecção de serviços online
-scan_network $(echo $ip_address | cut -d '.' -f 1-3)
-}
-
 INFOMAQUINA()
 {
 echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
@@ -244,6 +218,32 @@ echo -e "\033[32;1mBaixar WordList Oficial Kali Linux.\033[m"
 cd $DirAtual
 git clone --depth 1 https://github.com/danielmiessler/SecLists.git
 ls SecLists/
+}
+
+DETECTSERVICE()
+{
+# Define a função que vai executar o comando nmap e detectar os serviços online
+function detect_services {
+    nmap -n -sP $1 | awk '/is up/ {print up}; {gsub (/\(|\)/,""); up = $NF}' | while read host; do
+        nmap -n -sV $host | grep 'open' | awk '{print $1,$3,$4}' | while read service; do
+            echo "$host: $service"
+        done
+    done
+}
+
+# Define a função que vai buscar os endereços de IP
+function scan_network {
+    for i in $(seq 1 254); do
+        detect_services $1.$i &
+    done
+    wait
+}
+
+# Pede o endereço de IP inicial ao usuário
+read -p "Digite o endereço de IP inicial: " ip_address
+
+# Chama a função scan_network para iniciar a detecção de serviços online
+scan_network $(echo $ip_address | cut -d '.' -f 1-3)
 }
 
 INSTALLCOMP()
