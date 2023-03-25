@@ -8,7 +8,7 @@ volumes:
   db:
   nginxdata:
   nginxletsencrypt:
-  
+
 services:
   db:
     image: mariadb
@@ -23,10 +23,6 @@ services:
       - MYSQL_PASSWORD=SENHA_SENHA
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=thalles
-      #- MYSQL_ROOT_PASSWORD=SENHA_SENHA
-      #- MYSQL_DATABASE=nginx
-      #- MYSQL_USER=thalles
-      #- MYSQL_PASSWORD=SENHA_SENHA
 
   nextcloud:
     image: lscr.io/linuxserver/nextcloud:latest
@@ -42,27 +38,6 @@ services:
       - pnextcdata:/data
     ports:
       - 443:443
-    depends_on:
-      - db
-    links:
-      - db
-    restart: unless-stopped
-      
-  nextcloud_ead:
-    image: lscr.io/linuxserver/nextcloud:latest
-    container_name: nextcloud_ead
-    environment:
-      - MYSQL_PASSWORD=SENHA_SENHA
-      - MYSQL_DATABASE=nextcloud_ead
-      - MYSQL_USER=thalles
-      - MYSQL_HOST=db
-      - TZ=America/Fortaleza
-
-    volumes:
-      - eadnextcconfig:/config
-      - eadnextcdata:/data
-    ports:
-      - 8080:443
     depends_on:
       - db
     links:
