@@ -1,10 +1,10 @@
 #!/bin/bash
 
-echo -e "\033[1;31m[----------------------------------------------------------- VOCÊ PRECISARÁ -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
+echo -e "\033[1;31m--------------------- VOCÊ PRECISARÁ --------------------- \033[0m \033[1;31m \033[0m"
 
 echo -e "\033[1;31m[✔] Você precisará criar uma conta e um dominio antes. \033[0m \033[1;31m \033[0m"
 
-echo -e "\033[1;31m[----------------------------------------------------------- VOCÊ PRECISARÁ -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
+echo -e "\033[1;31m--------------------- VOCÊ PRECISARÁ --------------------- \033[0m \033[1;31m \033[0m"
 
 apt update && apt install -y wget && cd /usr/local/src
 
@@ -26,7 +26,7 @@ echo -e "\033[1;31m[✔] Compile o programa No-IP com o seguinte comando: \033[0
 echo -e "\033[1;31m[✔] Compilando o software.... \033[0m \033[1;31m \033[0m"
 sudo make
 
-echo -e "\033[1;31m[----------------------------------------------------------- Observação -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
+echo -e "\033[1;31m--------------------- Observação --------------------- \033[0m \033[1;31m \033[0m"
 
 echo -e "\033[1;31m[✔] O instalador do No-IP solicitará que você faça login na sua conta do No-IP. Digite suas credenciais de login para continuar. \033[0m \033[1;31m \033[0m"
 
@@ -36,7 +36,7 @@ echo -e "\033[1;31m[✔] O instalador do No-IP solicitará que você configure a
 
 echo -e "\033[1;31m[✔] Depois de concluir a configuração, o No-IP será iniciado automaticamente e começará a atualizar seu endereço IP no servidor No-IP. \033[0m \033[1;31m \033[0m"
 
-echo -e "\033[1;31m[----------------------------------------------------------- Observação -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
+echo -e "\033[1;31m--------------------- Observação --------------------- \033[0m \033[1;31m \033[0m"
 
 echo -e "\033[1;31m[✔] Instale o programa No-IP com o seguinte comando: \033[0m \033[1;31m \033[0m"
 echo -e "\033[1;31m[✔] Instalando o software.... \033[0m \033[1;31m \033[0m"
