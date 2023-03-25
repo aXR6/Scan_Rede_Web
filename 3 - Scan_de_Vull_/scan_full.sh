@@ -245,6 +245,7 @@ read -p "Digite o endereço de IP inicial: " ip_address
 # Chama a função scan_network para iniciar a detecção de serviços online
 scan_network $(echo $ip_address | cut -d '.' -f 1-3) >> $dir3/$lstsites
 echo -e "\033[32;1mTrabalho concluído. \033[m"
+cat $dir3/$lstsites
 }
 
 INSTALLCOMP()
