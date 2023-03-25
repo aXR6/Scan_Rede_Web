@@ -1,5 +1,12 @@
 #!/bin/bash
 
+
+echo -e "\033[1;31m[----------------------------------------------------------- VOCÊ PRECISARÁ -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
+
+echo -e "\033[1;31m[✔] Você precisará criar uma conta e um dominio antes. \033[0m \033[1;31m \033[0m"
+
+echo -e "\033[1;31m[----------------------------------------------------------- VOCÊ PRECISARÁ -----------------------------------------------------------] \033[0m \033[1;31m \033[0m"
+
 apt update && apt install -y wget && cd /usr/local/src
 
 echo -e "\033[1;31m[✔] Baixe o pacote de instalação mais recente do No-IP em https://www.noip.com/download. \033[0m \033[1;31m \033[0m"
