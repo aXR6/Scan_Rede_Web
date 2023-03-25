@@ -1,0 +1,4 @@
+docker system prune && 
+docker system prune -a && 
+docker volume ls -f dangling=true && 
+docker volume prune
