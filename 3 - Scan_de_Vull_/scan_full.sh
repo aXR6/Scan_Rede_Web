@@ -200,16 +200,21 @@ apt install -y gobuster
 echo -e "\033[32;1mVerificando se o HYDRA está instalado...\033[m"
 apt install -y hydra
 
-if [ -e $DirAtual/sslyze ]
-  then
-    echo -e "\033[32;1msslyze - Instalado!\033[m"
-  else
-    cd $DirAtual
-    echo -e "\033[32;1mClonando o repositorio do sslyze\033[m"
-    # git clone https://github.com/nabla-c0d3/sslyze
-    pip install --upgrade pip setuptools wheel
-    pip install --upgrade sslyze
-  fi
+# Define a função para instalar o sslyze
+function install_sslyze {
+  echo -e "\033[32;1mClonando o repositorio do sslyze\033[m"
+  # git clone https://github.com/nabla-c0d3/sslyze
+  pip install --upgrade pip setuptools wheel
+  pip install --upgrade sslyze
+}
+
+# Verifica se o sslyze está instalado e exibe uma mensagem
+if [ -e "$DirAtual/sslyze" ]; then
+  echo -e "\033[32;1msslyze - Instalado!\033[m"
+else
+  cd "$DirAtual"
+  install_sslyze
+fi
 }
 
 SECLIST()
@@ -253,7 +258,7 @@ INSTALLCOMP()
 echo -e "\033[32;1mVamos instalar a biblioteca - TLD no Python\033[m"
 echo -e "\033[32;1mVocê usa o pip, pip2 ou pip3?\033[m"
 read pipinstall
-$pipinstall install tld
+$pipinstall install --root-user-action=ignore tld
 
 echo -e "\033[32;1mVerificando se o GIT está instalado.\033[m"
 apt update
