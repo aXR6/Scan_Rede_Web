@@ -44,8 +44,8 @@ services:
       TZ: "Brazil"
       DB_MYSQL_HOST: "db"
       DB_MYSQL_PORT: "3306"
-      DB_MYSQL_USER: "thalles"          # Defina o usuario para o banco
-      DB_MYSQL_PASSWORD: "SENHA_SENHA"  # Defina sua senha
+      DB_MYSQL_USER: "thalles"            # Defina o usuario para o banco
+      DB_MYSQL_PASSWORD: "SENHA_SENHA"    # Defina sua senha
       DB_MYSQL_NAME: "nginx"
     volumes:
       - nginxdata:/data
