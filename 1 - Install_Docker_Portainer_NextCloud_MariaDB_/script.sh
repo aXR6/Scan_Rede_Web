@@ -1,8 +1,6 @@
 #!/bin/bash
 
 echo -e "\033[1;31m--------------------- PREPARANDO O AMBIENTE --------------------- \033[0m \033[1;31m \033[0m"
-#!/bin/bash
-
 # Atualiza o sistema operacional
 apt-get update && apt-get upgrade -y
 
