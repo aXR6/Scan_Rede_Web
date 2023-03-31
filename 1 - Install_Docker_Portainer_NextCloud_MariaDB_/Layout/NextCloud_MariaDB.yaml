@@ -10,18 +10,18 @@ services:
       - db:/var/lib/mysql
     environment:
       TZ: "Brazil"
-      MYSQL_ROOT_PASSWORD: "SENHA_SENHA"
-      MYSQL_PASSWORD: "SENHA_SENHA"
-      MYSQL_DATABASE: "nextcloud"
-      MYSQL_USER: "thalles"
+      MYSQL_ROOT_PASSWORD: "SENHA_SENHA" # Defina sua senha
+      MYSQL_PASSWORD: "SENHA_SENHA"      # Defina sua senha
+      MYSQL_DATABASE: "nextcloud"        # Defina o nome do banco de dados
+      MYSQL_USER: "thalles"              # Defina o usuario para o banco
 
   nextcloud:
     image: lscr.io/linuxserver/nextcloud:latest
     container_name: nextcloud
     environment:
-      MYSQL_PASSWORD: "SENHA_SENHA"
-      MYSQL_DATABASE: "nextcloud"
-      MYSQL_USER: "thalles"
+      MYSQL_PASSWORD: "SENHA_SENHA"      # Defina sua senha
+      MYSQL_DATABASE: "nextcloud"        # Defina o nome do banco de dados
+      MYSQL_USER: "thalles"              # Defina o usuario para o banco
       MYSQL_HOST: "db"
       TZ: "America/Fortaleza"
     volumes:
@@ -44,8 +44,8 @@ services:
       TZ: "Brazil"
       DB_MYSQL_HOST: "db"
       DB_MYSQL_PORT: "3306"
-      DB_MYSQL_USER: "thalles"
-      DB_MYSQL_PASSWORD: "SENHA_SENHA"
+      DB_MYSQL_USER: "thalles"          # Defina o usuario para o banco
+      DB_MYSQL_PASSWORD: "SENHA_SENHA"  # Defina sua senha
       DB_MYSQL_NAME: "nginx"
     volumes:
       - nginxdata:/data
