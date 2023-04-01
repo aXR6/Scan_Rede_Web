@@ -15,7 +15,7 @@ services:
       MYSQL_DATABASE: "nextcloud"        # Defina o nome do banco de dados
       MYSQL_USER: "thalles"              # Defina o usuario para o banco
     networks:
-      mynetwork:
+      networknc:
         ipv4_address: 172.20.0.2
 
   nextcloud:
@@ -36,7 +36,7 @@ services:
       - db
     restart: unless-stopped
     networks:
-      mynetwork:
+      networknc:
         ipv4_address: 172.20.0.3
 
   app2:
@@ -61,7 +61,7 @@ services:
     links:
       - db
     networks:
-      mynetwork:
+      networknc:
         ipv4_address: 172.20.0.4
 
 volumes:
@@ -74,7 +74,7 @@ volumes:
   nginxletsencrypt:
 
 networks:
-  mynetwork:
+  networknc:
     ipam:
       driver: default
       config:
