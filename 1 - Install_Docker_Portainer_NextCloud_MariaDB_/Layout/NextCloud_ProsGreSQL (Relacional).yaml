@@ -1,0 +1,79 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:13
+    restart: unless-stopped
+    container_name: postgres
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      TZ: "Brazil"
+      POSTGRES_PASSWORD: "SENHA_SENHA"   # Defina sua senha
+      POSTGRES_DB: "nextcloud"           # Defina o nome do banco de dados
+      POSTGRES_USER: "thalles"           # Defina o usuario para o banco
+    networks:
+      networknc:
+        ipv4_address: 172.20.0.2
+
+  nextcloud:
+    image: linuxserver/nextcloud:latest
+    container_name: nextcloud
+    environment:
+      POSTGRES_PASSWORD: "SENHA_SENHA"   # Defina sua senha
+      POSTGRES_DB: "nextcloud"           # Defina o nome do banco de dados
+      POSTGRES_USER: "thalles"           # Defina o usuario para o banco
+      POSTGRES_HOST: "172.20.0.2"        # Endereço IP do container do banco de dados
+      TZ: "America/Fortaleza"
+    volumes:
+      - pnextcconfig:/config
+      - pnextcdata:/data
+    ports:
+      - "443:443"
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      networknc:
+        ipv4_address: 172.20.0.3
+
+  app2:
+    image: jc21/nginx-proxy-manager:latest
+    restart: unless-stopped
+    container_name: nginxproxy
+    ports:
+      - "80:80"  # Public HTTP Port
+      - "81:81"  # Admin Web Port
+    environment:
+      TZ: "Brazil"
+      DB_HOST: "172.20.0.2"              # Endereço IP do container do banco de dados
+      DB_PORT: 5432
+      DB_USER: "thalles"                 # Defina o usuario para o banco
+      DB_PASSWORD: "SENHA_SENHA"         # Defina sua senha
+      DB_NAME: "nginx"
+    volumes:
+      - nginxdata:/data
+      - nginxletsencrypt:/etc/letsencrypt
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      networknc:
+        ipv4_address: 172.20.0.4
+
+volumes:
+  pnextcconfig:
+  pnextcdata:
+  eadnextcconfig:
+  eadnextcdata:
+  db:
+  nginxdata:
+  nginxletsencrypt:
+
+networks:
+  networknc:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
