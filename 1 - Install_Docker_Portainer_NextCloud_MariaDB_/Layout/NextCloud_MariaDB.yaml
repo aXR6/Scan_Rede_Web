@@ -14,6 +14,9 @@ services:
       MYSQL_PASSWORD: "SENHA_SENHA"      # Defina sua senha
       MYSQL_DATABASE: "nextcloud"        # Defina o nome do banco de dados
       MYSQL_USER: "thalles"              # Defina o usuario para o banco
+    networks:
+      mynetwork:
+        ipv4_address: 172.20.0.2
 
   nextcloud:
     image: lscr.io/linuxserver/nextcloud:latest
@@ -22,7 +25,7 @@ services:
       MYSQL_PASSWORD: "SENHA_SENHA"      # Defina sua senha
       MYSQL_DATABASE: "nextcloud"        # Defina o nome do banco de dados
       MYSQL_USER: "thalles"              # Defina o usuario para o banco
-      MYSQL_HOST: "db"
+      MYSQL_HOST: "172.20.0.2"           # Endereço IP do container do banco de dados
       TZ: "America/Fortaleza"
     volumes:
       - pnextcconfig:/config
@@ -32,6 +35,9 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+    networks:
+      mynetwork:
+        ipv4_address: 172.20.0.3
 
   app2:
     image: jc21/nginx-proxy-manager:latest
@@ -42,7 +48,7 @@ services:
       - "81:81" # Admin Web Port
     environment:
       TZ: "Brazil"
-      DB_MYSQL_HOST: "db"
+      DB_MYSQL_HOST: "172.20.0.2"        # Endereço IP do container do banco de dados
       DB_MYSQL_PORT: "3306"
       DB_MYSQL_USER: "thalles"            # Defina o usuario para o banco
       DB_MYSQL_PASSWORD: "SENHA_SENHA"    # Defina sua senha
@@ -54,6 +60,9 @@ services:
       - db
     links:
       - db
+    networks:
+      mynetwork:
+        ipv4_address: 172.20.0.4
 
 volumes:
   pnextcconfig:
@@ -63,3 +72,10 @@ volumes:
   db:
   nginxdata:
   nginxletsencrypt:
+
+networks:
+  mynetwork:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
