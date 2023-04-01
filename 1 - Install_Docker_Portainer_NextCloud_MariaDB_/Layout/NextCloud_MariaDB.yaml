@@ -2,7 +2,7 @@ version: '3'
 
 services:
   db:
-    image: mariadb
+    image: jc21/mariadb-aria:latest
     restart: unless-stopped
     container_name: mariadb
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
@@ -49,7 +49,7 @@ services:
     environment:
       TZ: "Brazil"
       DB_MYSQL_HOST: "172.20.0.2"        # Endereço IP do container do banco de dados
-      DB_MYSQL_PORT: "3306"
+      DB_MYSQL_PORT: 3306
       DB_MYSQL_USER: "thalles"            # Defina o usuario para o banco
       DB_MYSQL_PASSWORD: "SENHA_SENHA"    # Defina sua senha
       DB_MYSQL_NAME: "nginx"
