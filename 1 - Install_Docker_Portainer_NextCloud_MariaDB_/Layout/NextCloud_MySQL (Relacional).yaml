@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:latest
+    restart: unless-stopped
+    container_name: mysql
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      TZ: "Brazil"
+      MYSQL_ROOT_PASSWORD: "SENHA_SENHA" # Defina sua senha
+      MYSQL_PASSWORD: "SENHA_SENHA"      # Defina sua senha
+      MYSQL_DATABASE: "nextcloud"        # Defina o nome do banco de dados
+      MYSQL_USER: "thalles"              # Defina o usuario para o banco
+    networks:
+      networknc:
+        ipv4_address: 172.20.0.2
+
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    environment:
+      MYSQL_HOST: "172.20.0.2"           # Endereço IP do container do banco de dados
+      MYSQL_PORT: 3306
+      MYSQL_PASSWORD: "SENHA_SENHA"      # Defina sua senha
+      MYSQL_DATABASE: "nextcloud"        # Defina o nome do banco de dados
+      MYSQL_USER: "thalles"              # Defina o usuario para o banco
+      NEXTCLOUD_TRUSTED_DOMAINS: "localhost"
+      TZ: "America/Fortaleza"
+    volumes:
+      - pnextcconfig:/var/www/html/config
+      - pnextcdata:/var/www/html/data
+    ports:
+      - "443:443"
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      networknc:
+        ipv4_address: 172.20.0.3
+
+  app2:
+    image: jc21/nginx-proxy-manager:latest
+    restart: unless-stopped
+    container_name: nginxproxy
+    ports:
+      - "80:80" # Public HTTP Port
+      - "81:81" # Admin Web Port
+    environment:
+      TZ: "Brazil"
+      DB_HOST: "172.20.0.2"              # Endereço IP do container do banco de dados
+      DB_PORT: 3306
+      DB_USER: "thalles"                 # Defina o usuario para o banco
+      DB_PASSWORD: "SENHA_SENHA"         # Defina sua senha
+      DB_NAME: "nginx"
+      LETSENCRYPT_EMAIL: "email@example.com"
+      PROXY_IP_RANGE: "172.20.0.0/16"
+      ENABLE_IPV6: "false"
+    volumes:
+      - nginxdata:/data
+      - nginxletsencrypt:/etc/letsencrypt
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      networknc:
+        ipv4_address: 172.20.0.4
+
+volumes:
+  pnextcconfig:
+  pnextcdata:
+  eadnextcconfig:
+  eadnextcdata:
+  db:
+  nginxdata:
+  nginxletsencrypt:
+
+networks:
+  networknc:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
