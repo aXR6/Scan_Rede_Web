@@ -186,10 +186,10 @@ INFOMAQUINA() {
 
     if command -v dmidecode &> /dev/null; then
         echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
-        sudo dmidecode -t 2
+        dmidecode -t 2
 
         echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
-        sudo dmidecode -t 0
+        dmidecode -t 0
     else
         echo "dmidecode não está instalado. Não é possível mostrar informações da placa-mãe e do BIOS."
     fi
