@@ -166,36 +166,43 @@ TOOLXREDE() {
 ################
 ##/TOOLXREDE##
 
-INFOMAQUINA()
-{
-echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
+INFOMAQUINA() {
+    echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
 
-echo -e "\033[1;31m:=> Informações do CPU \033[0m"
-cat /proc/cpuinfo | grep "model name\|vendor_id\|cpu cores"
+    echo -e "\033[1;31m:=> Informações do CPU \033[0m"
+    awk -F': ' '/model name|vendor_id|cpu cores/ {print $2}' /proc/cpuinfo | sort -u
 
-echo -e "\033[1;31m:=> Informações da memória \033[0m"
-free -m
+    echo -e "\033[1;31m:=> Informações da memória \033[0m"
+    free -m
 
-echo -e "\033[1;31m:=> Informações dos discos \033[0m"
-df -h
+    echo -e "\033[1;31m:=> Informações dos discos \033[0m"
+    df -h
 
-echo -e "\033[1;31m:=> Informações dos dispositivos PCI \033[0m"
-lspci
+    echo -e "\033[1;31m:=> Informações dos dispositivos PCI \033[0m"
+    lspci
 
-echo -e "\033[1;31m:=> Informações dos dispositivos USB \033[0m"
-lsusb
+    echo -e "\033[1;31m:=> Informações dos dispositivos USB \033[0m"
+    lsusb
 
-echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
-dmidecode -t 2
+    if command -v dmidecode &> /dev/null; then
+        echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
+        sudo dmidecode -t 2
 
-echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
-dmidecode -t 0
+        echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
+        sudo dmidecode -t 0
+    else
+        echo "dmidecode não está instalado. Não é possível mostrar informações da placa-mãe e do BIOS."
+    fi
 
-echo -e "\033[1;31m:=> Informações do sistema operacional \033[0m"
-lsb_release -a
+    echo -e "\033[1;31m:=> Informações do sistema operacional \033[0m"
+    if command -v lsb_release &> /dev/null; then
+        lsb_release -a
+    else
+        echo "lsb_release não está instalado. Não é possível mostrar informações do sistema operacional."
+    fi
 
-echo -e "\033[1;31m:=> Informações do kernel \033[0m"
-uname -a
+    echo -e "\033[1;31m:=> Informações do kernel \033[0m"
+    uname -a
 }
 
 INSTALLTOOLS()
