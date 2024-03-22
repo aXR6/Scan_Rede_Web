@@ -1,12 +1,33 @@
 #!/bin/bash
 
-DirAtual=("${PWD}")
+# Armazena o diretório atual
+DirAtual="${PWD}"
+# Formata a data e o tempo
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
-#dir=("/home/$USER/Documentos/$data")
-# Para Kali Linux
-dir=("/home/$SUDO_USER/Documentos/$data")
-mkdir $dir
+
+# Verifica se o script está sendo executado como root
+if [ "$(id -u)" -eq 0 ]; then
+    # Para execução como root, usa SUDO_USER para encontrar o usuário que invocou o sudo
+    if [ -n "$SUDO_USER" ]; then
+        # Se estiver rodando com sudo, define o diretório de destino baseando-se em SUDO_USER
+        dir="/home/$SUDO_USER/Documentos/$data"
+    else
+        # Caso contrário, assume root como usuário diretamente (cenário menos comum)
+        dir="/root/Documentos/$data"
+    fi
+else
+    # Para execução como usuário comum
+    dir="/home/$USER/Documentos/$data"
+fi
+
+# Verifica se o diretório já existe antes de tentar criá-lo
+if [ ! -d "$dir" ]; then
+    mkdir -p "$dir"
+    echo "Diretório criado: $dir"
+else
+    echo "O diretório já existe: $dir"
+fi
 
 ##toolxmenu##
 ##################
