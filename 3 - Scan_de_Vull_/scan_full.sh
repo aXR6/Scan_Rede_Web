@@ -1,33 +1,17 @@
 #!/bin/bash
 
-# Armazena o diretório atual
-DirAtual="${PWD}"
-# Formata a data e o tempo
+DirAtual=("${PWD}")
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
-
-# Verifica se o script está sendo executado como root
-if [ "$(id -u)" -eq 0 ]; then
-    # Para execução como root, usa SUDO_USER para encontrar o usuário que invocou o sudo
-    if [ -n "$SUDO_USER" ]; then
-        # Se estiver rodando com sudo, define o diretório de destino baseando-se em SUDO_USER
-        dir="/home/$SUDO_USER/Documentos/$data"
-    else
-        # Caso contrário, assume root como usuário diretamente (cenário menos comum)
-        dir="/root/Documentos/$data"
-    fi
+# Verificando se o script está sendo executado com privilégios de superusuário (sudo)
+if [ -n "$SUDO_USER" ]; then
+    # Se sim, usar a variável $SUDO_USER
+    dir="/home/$SUDO_USER/Documentos/$data"
 else
-    # Para execução como usuário comum
+    # Se não, usar a variável $USER
     dir="/home/$USER/Documentos/$data"
 fi
-
-# Verifica se o diretório já existe antes de tentar criá-lo
-if [ ! -d "$dir" ]; then
-    mkdir -p "$dir"
-    echo "Diretório criado: $dir"
-else
-    echo "O diretório já existe: $dir"
-fi
+mkdir $dir
 
 ##toolxmenu##
 ##################
@@ -166,43 +150,36 @@ TOOLXREDE() {
 ################
 ##/TOOLXREDE##
 
-INFOMAQUINA() {
-    echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
+INFOMAQUINA()
+{
+echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
 
-    echo -e "\033[1;31m:=> Informações do CPU \033[0m"
-    awk -F': ' '/model name|vendor_id|cpu cores/ {print $2}' /proc/cpuinfo | sort -u
+echo -e "\033[1;31m:=> Informações do CPU \033[0m"
+cat /proc/cpuinfo | grep "model name\|vendor_id\|cpu cores"
 
-    echo -e "\033[1;31m:=> Informações da memória \033[0m"
-    free -m
+echo -e "\033[1;31m:=> Informações da memória \033[0m"
+free -m
 
-    echo -e "\033[1;31m:=> Informações dos discos \033[0m"
-    df -h
+echo -e "\033[1;31m:=> Informações dos discos \033[0m"
+df -h
 
-    echo -e "\033[1;31m:=> Informações dos dispositivos PCI \033[0m"
-    lspci
+echo -e "\033[1;31m:=> Informações dos dispositivos PCI \033[0m"
+lspci
 
-    echo -e "\033[1;31m:=> Informações dos dispositivos USB \033[0m"
-    lsusb
+echo -e "\033[1;31m:=> Informações dos dispositivos USB \033[0m"
+lsusb
 
-    if command -v dmidecode &> /dev/null; then
-        echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
-        dmidecode -t 2
+echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
+dmidecode -t 2
 
-        echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
-        dmidecode -t 0
-    else
-        echo "dmidecode não está instalado. Não é possível mostrar informações da placa-mãe e do BIOS."
-    fi
+echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
+dmidecode -t 0
 
-    echo -e "\033[1;31m:=> Informações do sistema operacional \033[0m"
-    if command -v lsb_release &> /dev/null; then
-        lsb_release -a
-    else
-        echo "lsb_release não está instalado. Não é possível mostrar informações do sistema operacional."
-    fi
+echo -e "\033[1;31m:=> Informações do sistema operacional \033[0m"
+lsb_release -a
 
-    echo -e "\033[1;31m:=> Informações do kernel \033[0m"
-    uname -a
+echo -e "\033[1;31m:=> Informações do kernel \033[0m"
+uname -a
 }
 
 INSTALLTOOLS()
@@ -232,8 +209,8 @@ apt install -y hydra
 function install_sslyze {
   echo -e "\033[32;1mClonando o repositorio do sslyze\033[m"
   # git clone https://github.com/nabla-c0d3/sslyze
-  pip install --upgrade pip setuptools wheel
-  pip install --upgrade sslyze
+  pip install --upgrade pip setuptools wheel --break-system-packages
+  pip install --upgrade sslyze --break-system-packages
 }
 
 # Verifica se o sslyze está instalado e exibe uma mensagem
@@ -253,47 +230,32 @@ git clone --depth 1 https://github.com/danielmiessler/SecLists.git
 ls SecLists/
 }
 
-DETECTSERVICE() {
-    # Cria um diretório temporário para armazenar os resultados
-    dir3=$(mktemp -d)
-    # Define um nome de arquivo para listar os sites
-    lstsites="list_of_services.txt"
-
-    # Função para detectar serviços em um único IP
-    function detect_services {
-        local host=$1
-        nmap -n -sV "$host" | grep 'open' | awk '{print $1,$3,$4}' > "$dir3/${host}_services.txt"
-        if [ -s "$dir3/${host}_services.txt" ]; then
-            while read service; do
-                echo "$host: $service"
-            done < "$dir3/${host}_services.txt"
-        fi
-    }
-
-    # Função para escanear a rede e detectar hosts ativos
-    function scan_network {
-        local base_ip=$1
-        echo "Iniciando escaneamento na rede $base_ip.0/24..."
-        nmap -n -sP "${base_ip}.0/24" | awk '/is up/ {print up}; {gsub (/\(|\)/,""); up = $NF}' | while read host; do
-            echo "Detectando serviços em $host..."
-            detect_services $host &
+DETECTSERVICE()
+{
+# Define a função que vai executar o comando nmap e detectar os serviços online
+function detect_services {
+    nmap -n -sP $1 | awk '/is up/ {print up}; {gsub (/\(|\)/,""); up = $NF}' | while read host; do
+        nmap -n -sV $host | grep 'open' | awk '{print $1,$3,$4}' | while read service; do
+            echo "$host: $service"
         done
-        wait
-    }
+    done
+}
 
-    # Solicita ao usuário o endereço de IP inicial
-    read -p "Digite o endereço de IP inicial (ex: 192.168.1): " ip_address
+# Define a função que vai buscar os endereços de IP
+function scan_network {
+    for i in $(seq 1 254); do
+        detect_services $1.$i &
+    done
+    wait
+}
 
-    # Inicia a detecção de serviços online
-    scan_network "$(echo $ip_address | cut -d '.' -f 1-3)"
+# Pede o endereço de IP inicial ao usuário
+read -p "Digite o endereço de IP inicial: " ip_address
 
-    echo -e "\033[32;1mTrabalho concluído.\033[m"
-    # Combina os arquivos de resultados individuais em um único arquivo
-    cat "$dir3"/*_services.txt > "$dir3/$lstsites"
-    # Mostra o conteúdo do arquivo de resultados
-    cat "$dir3/$lstsites"
-    # Limpeza: remover diretório temporário se necessário
-    # rm -r "$dir3"
+# Chama a função scan_network para iniciar a detecção de serviços online
+scan_network $(echo $ip_address | cut -d '.' -f 1-3) >> $dir3/$lstsites
+echo -e "\033[32;1mTrabalho concluído. \033[m"
+cat $dir3/$lstsites
 }
 
 INSTALLCOMP()
@@ -301,7 +263,7 @@ INSTALLCOMP()
 echo -e "\033[32;1mVamos instalar a biblioteca - TLD no Python\033[m"
 echo -e "\033[32;1mVocê usa o pip, pip2 ou pip3?\033[m"
 read pipinstall
-$pipinstall install --root-user-action=ignore tld
+$pipinstall install --root-user-action=ignore tld --break-system-packages
 
 echo -e "\033[32;1mVerificando se o GIT está instalado.\033[m"
 apt update
@@ -350,206 +312,197 @@ TODAS()
    SSLYZE
 }
 
-NIKTO() {
-    # Checando se o diretório da lista existe
-    if [ ! -d "$dirlista" ]; then
-        echo "O diretório $dirlista não existe."
-        return 1 # Retorna falha
-    fi
+NIKTO()
+{
+    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
+    while read line
+    do
+       [[ "$line" != '' ]] && ARRAY+=("$line")
+    done < $dirlista/$lstsites
 
-    # Checando se o arquivo de lista de sites existe
-    if [ ! -f "$dirlista/$lstsites" ]; then
-        echo "O arquivo de lista $dirlista/$lstsites não existe."
-        return 1 # Retorna falha
-    fi
+      #Percorrendo todos os valores do ARRAY
+      for linha in "${ARRAY[@]}"
+        do
+          mkdir $dir2/$linha/
+          echo -e "\033[32;1m ==== ($lstsites) - Nikto Full Scan ==== :=> $linha \033[m"
+          echo " "
+          nikto -Tuning 1234567890abc -h $linha -o $dir2/$linha/NIKTO_Tuning.html
+          nikto -C all -h $linha -o $dir2/$linha/NIKTO_CALL.html
+          #Removendo valor lido
+          #unset ARRAY
+          #Removendo o arquivo lido ($lstsites.txt)
+          #rm -r $dir2/$lstsites.txt
+    done
+}
 
-    # Lendo valores do arquivo ($lstsites.txt) para um array
-    while IFS= read -r line; do
+NMAP()
+{
+    # Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
+    while read line
+    do
         [[ "$line" != '' ]] && ARRAY+=("$line")
     done < "$dirlista/$lstsites"
 
-    # Percorrendo todos os valores do array
-    for linha in "${ARRAY[@]}"; do
-        # Criando diretório se não existir
-        mkdir -p "$dir2/$linha/"
-
-        echo -e "\033[32;1m ==== ($lstsites) - Nikto Full Scan ==== :=> $linha \033[m"
-        echo " "
-
-        # Executando varreduras com nikto e salvando os resultados
-        nikto -Tuning 1234567890abc -h "$linha" -o "$dir2/$linha/NIKTO_Tuning.html"
-        nikto -C all -h "$linha" -o "$dir2/$linha/NIKTO_CALL.html"
-    done
-
-    # Nota: Removido unset ARRAY e rm -r $dir2/$lstsites.txt para manter os dados para uso futuro.
-}
-
-NMAP() {
-    # Verificando se o diretório e o arquivo de lista existem
-    if [[ ! -d "$dirlista" ]] || [[ ! -f "$dirlista/$lstsites" ]]; then
-        echo "Diretório ou arquivo de lista não encontrado."
-        return 1
-    fi
-
-    # Limpando a ARRAY antes de começar
-    ARRAY=()
-
-    # Lendo valores do arquivo ($lstsites.txt) em uma ARRAY
-    while IFS= read -r line; do
-        [[ -n "$line" ]] && ARRAY+=("$line")
-    done < "$dirlista/$lstsites"
-
     # Percorrendo todos os valores do ARRAY
-    for linha in "${ARRAY[@]}"; do
+    for linha in "${ARRAY[@]}"
+    do
         mkdir -p "$dir2/$linha/"
-        echo -e "\033[32;1m ==== ($lstsites) - Gerar 20 IPs aleatorios e desconsiderar IPS e IDS ==== :=> $linha \033[m\n"
-
-        nmap -D RND:20 --open -sS -p- "$linha" -oA "$dir2/$linha/PortasAbertas"
-        echo -e "\n\033[32;1m ==== ($lstsites) - Slow comprehensive scan ==== :=> $linha \033[m\n"
-
-        nmap -sS -sU -T4 -A -v -PE -PP -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA "$dir2/$linha/ShowcomprehensiveSCAN" "$linha"
-        echo -e "\n\033[32;1m ==== ($lstsites) - Dados interessantes em ==== :=> $linha \033[m\n"
-
-        nmap --reason --packet-trace -sN -f -sV -oA "$dir2/$linha/DadosInteressantes" "$linha"
-        echo -e "\n\033[32;1m ==== ($lstsites) - INTENSIVO ==== :=> $linha \033[m\n"
-
-        nmap -T4 -A -v --script vuln -oA "$dir2/$linha/VULNERAVEIS" "$linha"
-        echo -e "\n\033[32;1m ==== ($lstsites) - EXPLOIT ==== :=> $linha \033[m\n"
-
-        nmap -T4 -A -v --script exploit -oA "$dir2/$linha/EXPLOIT" "$linha"
-        # Adicione aqui demais comandos conforme necessário, seguindo o padrão acima
-
-        # O comando `unset ARRAY` foi removido, pois não é necessário se a função só será chamada uma vez por execução do script
-        # O comando `rm -r $dir2/$lstsites.txt` foi comentado pois pode ser perigoso remover arquivos automaticamente sem confirmação do usuário
-    done
-}
-
-GOBUSTER() {
-    # Inicializa a array
-    ARRAY=()
-
-    # Lê valores do arquivo em uma array
-    while IFS= read -r line || [[ -n "$line" ]]; do
-        if [[ "$line" != '' ]]; then
-            ARRAY+=("$line")
-        fi
-    done < "$dirlista/$lstsites"
-
-    # Percorre todos os valores da array
-    for linha in "${ARRAY[@]}"; do
-        mkdir -p "$dir2/$linha/"
-        echo -e "\033[32;1m ==== ($lstsites) - GOBUSTER  ==== :=> $linha \033[m"
-        echo -e "\033[32;1m Analisando o site ... \033[m"
-        
-        gobuster dir -u "$linha" -w "$DirAtual/SecLists/Discovery/Web-Content/common.txt" -q -n -e -o "$dir2/$linha/Rel1_$linha"
-        gobuster dns -q -n -t 100 -u "$linha" -w "$DirAtual/SecLists/Discovery/DNS/namelist.txt" -o "$dir2/$linha/Rel2_$linha"
-        gobuster dns -q -n -u "$linha" -w "$DirAtual/SecLists/Discovery/DNS/subdomains-top1million-110000.txt" -o "$dir2/$linha/Rel3_$linha"
-        gobuster dns -q -n -u "$linha" -w "$DirAtual/SecLists/Discovery/DNS/subdomains-top1million-110000.txt" -i -o "$dir2/$linha/Rel4_$linha"
+        echo -e "\033[32;1m ==== ($lstsites) - Gerar 20 IPs aleatórios e desconsiderar IPS e IDS ==== :=> $linha \033[m"
         echo " "
+        nmap -D RND:20 --open -sS -p- "$linha" -oA "$dir2/$linha/PortasAbertas"
+        echo " "
+        echo -e "\033[32;1m ==== ($lstsites) - Slow comprehensive scan ==== :=> $linha \033[m"
+        echo " "
+        nmap -sS -sU -T4 -A -v -PE -PP -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA "$dir2/$linha/ShowcomprehensiveSCAN" "$linha"
+        echo " "
+        echo -e "\033[32;1m ==== ($lstsites) - Dados interessantes em ==== :=> $linha \033[m"
+        echo " "
+        nmap --reason --packet-trace -sN -f -sV -oA "$dir2/$linha/DadosInteressantes" "$linha"
+        echo " "
+        echo -e "\033[32;1m ==== ($lstsites) - INTENSIVO ==== :=> $linha \033[m"
+        echo " "
+        nmap -T4 -A -v -oA "$dir2/$linha/INTENSIVO" "$linha"
+        echo " "
+        echo -e "\033[32;1m ==== ($lstsites) - VULNERABILIDADES ==== :=> $linha \033[m"
+        echo " "
+        nmap -T4 -A -v --script vuln -oA "$dir2/$linha/VULNERAVEIS" "$linha"
+        echo " "
+        echo -e "\033[32;1m ==== ($lstsites) - EXPLOIT ==== :=> $linha \033[m"
+        echo " "
+        nmap -T4 -A -v --script exploit -oA "$dir2/$linha/EXPLOIT" "$linha"
+        echo " "
+        echo -e "\033[32;1m ==== ($lstsites) - PACOTES EXTRAS ==== :=> $linha \033[m"
+        echo " "
+        nmap -sS -v -Pn -A --open --script=vuln "$linha" -oA "$dir2/$linha/EXTRA_AnaliseVulnerabilidades"
+        nmap -v -sV -Pn -O --open "$linha" -oA "$dir2/$linha/EXTRA_PortasAbertasVersaoSO"
+        nmap -script=asn-query,whois-ip,ip-geolocation-maxmind "$linha" -oA "$dir2/$linha/EXTRA_InformacoesGOIP"
+        nmap -f -sV -A "$linha" -oA "$dir2/$linha/EXTRA_BurlFirewallFragPacote"
+        nmap -sS -sV -A "$linha" -oA "$dir2/$linha/EXTRA_BurlFirewallSYN"
+        nmap -Pn -sV -A "$linha" -oA "$dir2/$linha/EXTRA_BurlFirewallNICMP"
+        nmap -sS -O -Pn -v "$linha" -oA "$dir2/$linha/ScanFirewallFraco"
+        nmap -sU -A -Pn -n -pU:19,53,123,161 -script=ntp-monlist,dns-recursion,snmp-sysdescr "$linha" -oA "$dir2/$linha/EXTRA_FalhasDDoS"
+        nmap --script=mysql-brute "$linha" -oA "$dir2/$linha/EXTRA_BruteForceBD"
+        nmap -sTUR -O -v -p 1-65535 -Pn "$linha" -oA "$dir2/$linha/ScanPIPOCO"
     done
 }
 
-HYDRA() {
+GOBUSTER()
+{
+    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
+    while read line
+    do
+       [[ "$line" != '' ]] && ARRAY+=("$line")
+    done < $dirlista/$lstsites
+
+      #Percorrendo todos os valores do ARRAY
+      for linha in "${ARRAY[@]}"
+        do
+          mkdir $dir2/$linha/
+          echo -e "\033[32;1m ==== ($lstsites) - GOBUSTER  ==== :=> $linha \033[m"
+          echo -e "\033[32;1m Analisando o site ... \033[m"
+          gobuster -u $linha -w $DirAtual/SecLists/Discovery/Web-Content/common.txt -q -n -e -o $dir2/$linha/Rel1_$linha
+          gobuster -m dns -t 100 -u $linha -w $DirAtual/SecLists/Discovery/DNS/namelist.txt -o $dir2/$linha/Rel2_$linha
+          gobuster -m dns -u $linha -w $DirAtual/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -o $dir2/$linha/Rel3_$linha
+          gobuster -m dns -u $linha -w $DirAtual/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -i -o $dir2/$linha/Rel4_$linha
+          echo " "
+          #Removendo valor lido
+          #unset ARRAY
+          #Removendo o arquivo lido ($lstsites.txt)
+          #rm -r $dir2/$lstsites.txt
+      done
+}
+
+HYDRA()
+{
     dirpass="$DirAtual/SecLists/Usernames/top-usernames-shortlist.txt"
-    # Definindo cores
-    green="\033[32;1m"
-    reset="\033[m"
+    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
+    while read line
+    do
+       [[ "$line" != '' ]] && ARRAY+=("$line")
+    done < $dirlista/$lstsites
 
-    # Verificando e lendo valores do arquivo em uma array
-    while read -r line; do
-        [[ -n "$line" ]] && ARRAY+=("$line")
-    done < "$dirlista/$lstsites"
-
-    # Percorrendo todos os valores da array
-    for linha in "${ARRAY[@]}"; do
-        mkdir -p "$dir2/$linha/"
-        echo -e "${green} ==== ($lstsites) - HYDRA  ==== :=> $linha ${reset}"
-        echo -e "${green}Analisando o site ... ${reset}"
-        
-        while read -r user; do
-            hydra -l "$user" -P "$DirAtual/SecLists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt" "$linha" ftp
-            hydra -l "$user" -P "$DirAtual/SecLists/Passwords/Common-Credentials/10k-most-common.txt" "$linha" ssh
-        done < "$dirpass"
-    done
+      #Percorrendo todos os valores do ARRAY
+      for linha in "${ARRAY[@]}"
+        do
+          mkdir $dir2/$linha/
+          echo -e "\033[32;1m ==== ($lstsites) - HYDRA  ==== :=> $linha \033[m"
+          echo -e "\033[32;1m Analisando o site ... \033[m"
+            while read user; do
+               hydra -l $user -P $DirAtual/SecLists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt $linha ftp
+               hydra -l $user -P $DirAtual/SecLists/Passwords/Common-Credentials/10k-most-common.txt $linha ssh
+            done < $dirpass
+          #Removendo valor lido
+          #unset ARRAY
+          #Removendo o arquivo lido ($lstsites.txt)
+          #rm -r $dir2/$lstsites.txt
+      done
 }
 
-SSLYZE() {
-    # Verifica se o diretório existe e lê os valores do arquivo para uma array
-    if [ -d "$dirlista" ] && [ -f "$dirlista/$lstsites" ]; then
-        mapfile -t ARRAY < <(grep '.' "$dirlista/$lstsites")
-    else
-        echo "Diretório ou arquivo de lista não encontrado."
-        return 1
-    fi
+SSLYZE()
+{
+    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
+    while read line
+    do
+       [[ "$line" != '' ]] && ARRAY+=("$line")
+    done < $dirlista/$lstsites
 
-    # Verifica se a pasta de destino existe, se não, cria
-    [ ! -d "$dir2" ] && mkdir -p "$dir2"
+      #Percorrendo todos os valores do ARRAY
+      for linha in "${ARRAY[@]}"
+        do
+          mkdir $dir2/$linha/
+          echo -e "\033[32;1m ==== ($lstsites) - sslyzev  ==== :=> $linha \033[m"
+          echo -e "\033[32;1m Analisando o site ... \033[m"
+          python -m sslyze $linha > $dir2/$linha/DadosSobreCertf_$linha.html
+          #Removendo valor lido
+          #unset ARRAY
+          #Removendo o arquivo lido ($lstsites.txt)
+          #rm -r $dir2/$lstsites.txt
+      done
+}
 
-    # Percorre todos os valores da array
-    for linha in "${ARRAY[@]}"; do
-        mkdir -p "$dir2/$linha/"
-        echo -e "\033[32;1m ==== ($lstsites) - sslyze ==== :=> $linha \033[m"
-        echo -e "\033[32;1m Analisando o site ... \033[m"
-        python -m sslyze "$linha" > "$dir2/$linha/DadosSobreCertf_$linha.html"
-    done
+cidr_to_netmask() {
+    local cidr=$1
+    local mask=$((0xffffffff << (32 - cidr)))
+    printf "%d.%d.%d.%d\n" $((mask >> 24 & 0xff)) $((mask >> 16 & 0xff)) $((mask >> 8 & 0xff)) $((mask & 0xff))
 }
 
 SCANREDE() {
-    echo -e "\033[32;1mIniciando varredura da rede...\033[m"
-    # Identificação das interfaces de rede
-    NICs=$(ip -br link | awk '{print $1}')
-    for i in ${NICs}; do
-        # Obtenção do IP, Broadcast e Máscara de Sub-rede
-        IP=$(ip addr show $i | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
-        BCAST=$(ip addr show $i | grep "brd" | awk '{print $4}')
-        MASK=$(ip addr show $i | grep "inet\b" | awk '{print $2}')
-        MAC_ADDR=$(ip link show $i | awk '/ether/ {print $2}')
+    echo -e '\033[32;1m ==== Iniciando Scan da Rede ==== \033[m'
+
+    for i in $(ip addr list | grep BROADCAST | awk -F ':' '{print $2}' | tr -d ' '); do
+        IP=$(ip a show $i | grep -oP 'inet \K[\d.]+' | head -1)
+        CIDR=$(ip a show $i | grep -oP 'inet \K[\d.]+/\d+' | awk -F'/' '{print $2}' | head -1)
+        MASK=$(cidr_to_netmask $CIDR)
+        REDE=$(ip route | grep -oP "[\d.]+/\d+.*dev $i proto kernel" | awk '{print $1}')
+        MAC_ADDR=$(ip link show $i | grep -oP 'link/ether \K[\da-f:]+')
+
+        # Define o Gateway
         GW=$(ip route | grep default | grep $i | awk '{print $3}')
 
-        # Se a interface não tiver um endereço IP, pule para a próxima interface
         if [ -z "$IP" ]; then
             continue
         fi
 
-        REDE=$(echo $MASK | cut -d/ -f1)
-        dir3="/tmp"
-        lstsites="online_ips.txt"
-        
-        # Escaneamento da rede para portas abertas
-        echo "Varrendo a rede $MASK..."
-        nmap -p 80 $MASK -oG "$dir3/nullbyte.txt"
-
-        # Filtragem dos IPs online
-        grep "Up" "$dir3/nullbyte.txt" | awk '{print $2}' > "$dir3/$lstsites"
-        rm -r "$dir3/nullbyte.txt"
-        echo -e "\033[32;1m ==== IPs online salvos em $dir3/$lstsites na rede $REDE ==== \033[m"
-
-        # Informações de hardware
-        MEM=$(grep "MemTotal" /proc/meminfo | awk '{print $2 $3}')
-        NPROC=$(grep -c "processor" /proc/cpuinfo)
-        PROC=$(grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2 | sed 's/^[ \t]*//')
-
-        # Exibição das informações coletadas
-        echo -e "\033[32;1m ==== Informações de Hardware ==== \033[m"
-        echo "Hostname ........: $(hostname)"
-        echo "Memória .........: $MEM"
-        echo "Processador .....: [ $NPROC ]$PROC"
-        echo
-        echo -e "\033[32;1m ==== Informações de Rede ==== \033[m"
-        echo "Interface .......: $i"
-        echo "Endereço IP .....: $IP"
-        echo "Endereço Físico .: $MAC_ADDR"
-        echo "Broadcast .......: $BCAST"
-        echo "Máscara .........: $MASK"
-        echo "Rede ............: $REDE"
-        echo "Gateway .........: $GW"
-        echo "Local de análise : $dir3/$lstsites"
+        echo -e "\033[32;1m ==== Informações da Interface: $i ==== \033[m"
+        echo "Endereço IP .......: $IP"
+        echo "Endereço Físico ...: $MAC_ADDR"
+        echo "Máscara ...........: $MASK"
+        echo "Rede ..............: $REDE"
+        echo "Gateway ...........: $GW"
         echo
 
-        DNS=$(awk '/^nameserver/ {print $2}' /etc/resolv.conf | tr '\n' ' ')
-        echo "Servidores DNS ..: $DNS"
-        echo
+        # Executar o Nmap
+        nmap -p 80 $REDE -oG "/tmp/nullbyte.txt"
+        awk '/Up$/{print $2}' "/tmp/nullbyte.txt" >> "/tmp/$lstsites"
+        rm -f "/tmp/nullbyte.txt"
+        echo -e "\033[32;1m ==== IPs ONLINE na REDE $REDE identificados em $lstsites ==== \033[m"
+
     done
+
+    # DNS
+    DNS=$(awk '/^nameserver/ {print $2}' /etc/resolv.conf | tr '\n' ' ')
+    echo -e "DNS Servers........: $DNS"
+    echo
 }
 
 ##Bem Vindo##
