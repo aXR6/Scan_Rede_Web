@@ -160,12 +160,13 @@ AMBVIRT(){
    # Checa se o ambiente virtual já existe, se não, cria um
    if [ ! -d "$VENV_DIR" ]; then
       python3 -m venv "$VENV_DIR"
+      echo -e "Ambiente temporario criado."
    fi
 
    # Ativa o ambiente virtual
    source "$VENV_DIR/bin/activate"
-
-   echo -e "Ambiente temporario criado. Só curtir..."
+   echo -e "Ambiente ativado. Só curtir..."
+   
 }
 
 INFOMAQUINA() {
