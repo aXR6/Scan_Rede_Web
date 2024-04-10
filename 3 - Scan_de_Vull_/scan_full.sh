@@ -27,7 +27,12 @@ else
     # Se não, usar a variável $USER
     dir="/home/$USER/Documentos/$data"
 fi
-mkdir $dir
+if [ ! -d "$dir" ]; then
+    mkdir -p "$dir"
+    echo "Diretório criado: $dir"
+else
+    echo "Diretório já existe: $dir"
+fi
 
 ##toolxmenu##
 ##################
