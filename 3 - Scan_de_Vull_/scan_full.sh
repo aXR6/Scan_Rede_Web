@@ -154,8 +154,17 @@ TOOLXREDE() {
 ##/TOOLXREDE##
 
 AMBVIRT(){
-   python3 -m venv /tmp
-   source /tmp/bin/activate
+   # Define o diretório do ambiente virtual
+   VENV_DIR="/tmp/venv"
+
+   # Checa se o ambiente virtual já existe, se não, cria um
+   if [ ! -d "$VENV_DIR" ]; then
+      python3 -m venv "$VENV_DIR"
+   fi
+
+   # Ativa o ambiente virtual
+   source "$VENV_DIR/bin/activate"
+
    echo -e "Ambiente temporario criado. Só curtir..."
 }
 
