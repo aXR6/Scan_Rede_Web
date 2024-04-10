@@ -312,32 +312,37 @@ git clone --depth 1 https://github.com/danielmiessler/SecLists.git
 ls SecLists/
 }
 
-DETECTSERVICE()
-{
-# Define a função que vai executar o comando nmap e detectar os serviços online
-function detect_services {
-    nmap -n -sP $1 | awk '/is up/ {print up}; {gsub (/\(|\)/,""); up = $NF}' | while read host; do
-        nmap -n -sV $host | grep 'open' | awk '{print $1,$3,$4}' | while read service; do
-            echo "$host: $service"
+DETECTSERVICE() {
+    # Função para detectar serviços em hosts ativos usando nmap
+    detect_services() {
+        # Executa um scan nmap para encontrar serviços em um host
+        nmap -n -sV $1 | grep 'open' | awk '{print $1,$3,$4}' | while read service; do
+            echo "$1: $service"
         done
-    done
-}
+    }
 
-# Define a função que vai buscar os endereços de IP
-function scan_network {
-    for i in $(seq 1 254); do
-        detect_services $1.$i &
-    done
-    wait
-}
+    # Função para iterar sobre uma faixa de IPs e chamar detect_services para cada um
+    scan_network() {
+        local base_ip=$(echo $1 | cut -d '.' -f 1-3)
+        for i in $(seq 1 254); do
+            detect_services "${base_ip}.$i" &
+        done
+        wait
+    }
 
-# Pede o endereço de IP inicial ao usuário
-read -p "Digite o endereço de IP inicial: " ip_address
+    # Solicita ao usuário a faixa de IPs para o scan
+    echo "Digite a faixa de IPs inicial (ex.: 192.168.1.0)"
+    read -p "Faixa de IPs: " ip_range
 
-# Chama a função scan_network para iniciar a detecção de serviços online
-scan_network $(echo $ip_address | cut -d '.' -f 1-3) >> $dir3/$lstsites
-echo -e "\033[32;1mTrabalho concluído. \033[m"
-cat $dir3/$lstsites
+    # Extrai a base da faixa de IPs fornecida
+    local base_ip=$(echo $ip_range | cut -d '.' -f 1-3)
+
+    # Inicia a detecção de serviços online, redirecionando a saída para um arquivo
+    echo -e "\033[32;1mIniciando a detecção de serviços online...\033[m"
+    scan_network $base_ip > "$dir3/$lstsites"
+
+    echo -e "\033[32;1mTrabalho concluído. Serviços detectados:\033[m"
+    cat $dir3/$lstsites
 }
 
 INSTALLCOMP()
@@ -562,6 +567,9 @@ cidr_to_netmask() {
 SCANREDE() {
     echo -e '\033[32;1m ==== Iniciando Scan da Rede ==== \033[m'
 
+    # Garantir que o diretório de saída exista
+    [ ! -d "$dir3" ] && mkdir -p "$dir3"
+
     for i in $(ip addr list | grep BROADCAST | awk -F ':' '{print $2}' | tr -d ' '); do
         IP=$(ip a show $i | grep -oP 'inet \K[\d.]+' | head -1)
         CIDR=$(ip a show $i | grep -oP 'inet \K[\d.]+/\d+' | awk -F'/' '{print $2}' | head -1)
@@ -584,12 +592,18 @@ SCANREDE() {
         echo "Gateway ...........: $GW"
         echo
 
-        # Executar o Nmap
-        nmap -p 80 $REDE -oG "$dir3/nullbyte.txt"
-        awk '/Up$/{print $2}' "$dir3/nullbyte.txt" >> "$dir3/$lstsites"
-        rm -f "$dir3/nullbyte.txt"
-        echo -e "\033[32;1m ==== IPs ONLINE na REDE $REDE identificados em $lstsites ==== \033[m"
+        # Preparar arquivo de saída
+        SCAN_OUTPUT="$dir3/${i}_scan.txt"
 
+        # Executar um scan Nmap mais detalhado
+        echo -e "\033[32;1mScanning $REDE ...\033[m"
+        nmap -sV -O -p 20-443 $REDE -oN "$SCAN_OUTPUT"
+
+        # Processar os resultados para extrair IPs online e serviços
+        echo -e "\033[32;1mResultados:\033[m"
+        grep -E "Nmap scan report for|open" "$SCAN_OUTPUT" | awk '/Nmap scan report for/ {ip=$NF} /open/ {print ip " " $0}' >> "$dir3/${i}_services.txt"
+
+        echo "Detalhes do scan salvos em: $dir3/${i}_services.txt"
     done
 
     # DNS
