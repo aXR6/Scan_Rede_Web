@@ -26,15 +26,16 @@ toolxmenu() {
    	"Testar Sites (Lista de SITES)"
    	"Baixar WordList Oficial Kali Linux"
    	"Informações sobre Hardware e SO"
+      "Criar um ambiente virtual"
    	"SAIR")
 	    select opt in "${options[@]}"
 	    do
 	      case $opt in
 		 "(1º Faça)-Instalação dos componentes")
-		    INSTALLTOOLS
+		    INSTALLCOMP
 		    ;;
 		 "(2º Faça)-Instalação das ferramentas")
-		    INSTALLCOMP
+		    INSTALLTOOLS
 		    ;;
 		 "Testar a Rede (Toda a REDE)")
 		    TOOLXREDE
@@ -47,6 +48,9 @@ toolxmenu() {
 		    ;;
 		 "Informações sobre Hardware e SO")
 		    INFOMAQUINA
+          ;;
+       "Criar um ambiente virtual")
+          AMBVIRT
 		    ;;
 		 "SAIR")
 		    exit 0
@@ -57,7 +61,6 @@ toolxmenu() {
       esac
     done
 }
-
 ##END toolxmenu##
 ################
 ##/toolxmenu##
@@ -150,36 +153,49 @@ TOOLXREDE() {
 ################
 ##/TOOLXREDE##
 
-INFOMAQUINA()
-{
-echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
+AMBVIRT(){
+   python3 -m venv /tmp
+   source /tmp/bin/activate
+}
 
-echo -e "\033[1;31m:=> Informações do CPU \033[0m"
-cat /proc/cpuinfo | grep "model name\|vendor_id\|cpu cores"
+INFOMAQUINA() {
+  echo -e "\033[1;31m:=> Informações do sistema: \033[0m"
 
-echo -e "\033[1;31m:=> Informações da memória \033[0m"
-free -m
+  echo -e "\033[1;31m:=> Informações do CPU \033[0m"
+  grep "model name\|vendor_id\|cpu cores" /proc/cpuinfo | sort -u
 
-echo -e "\033[1;31m:=> Informações dos discos \033[0m"
-df -h
+  echo -e "\033[1;31m:=> Informações da memória \033[0m"
+  free -h
 
-echo -e "\033[1;31m:=> Informações dos dispositivos PCI \033[0m"
-lspci
+  echo -e "\033[1;31m:=> Informações dos discos \033[0m"
+  df -hT | grep -vE 'tmpfs|udev'
 
-echo -e "\033[1;31m:=> Informações dos dispositivos USB \033[0m"
-lsusb
+  echo -e "\033[1;31m:=> Informações dos dispositivos PCI \033[0m"
+  lspci
 
-echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
-dmidecode -t 2
+  echo -e "\033[1;31m:=> Informações dos dispositivos USB \033[0m"
+  lsusb
 
-echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
-dmidecode -t 0
+  if command -v dmidecode &> /dev/null; then
+    echo -e "\033[1;31m:=> Informações da placa-mãe \033[0m"
+    sudo dmidecode -t 2
 
-echo -e "\033[1;31m:=> Informações do sistema operacional \033[0m"
-lsb_release -a
+    echo -e "\033[1;31m:=> Informações do BIOS \033[0m"
+    sudo dmidecode -t 0
+  else
+    echo -e "\033[1;33mDmidecode não está instalado. Algumas informações não podem ser exibidas.\033[0m"
+  fi
 
-echo -e "\033[1;31m:=> Informações do kernel \033[0m"
-uname -a
+  if command -v lsb_release &> /dev/null; then
+    echo -e "\033[1;31m:=> Informações do sistema operacional \033[0m"
+    lsb_release -a
+  else
+    echo -e "\033[1;33mlsb_release não está disponível. Exibindo informações do /etc/os-release.\033[0m"
+    cat /etc/os-release
+  fi
+
+  echo -e "\033[1;31m:=> Informações do kernel \033[0m"
+  uname -r
 }
 
 INSTALLTOOLS()
@@ -191,13 +207,32 @@ echo -e "\033[32;1mVerificando se o Net-Tools está instalado...\033[m"
 apt install -y net-tools curl
 
 echo -e "\033[32;1mVerificando se o Python 3 está instalado...\033[m"
-apt install -y python3-pip
+apt install -y python3-pip python3.11-venv
 
 echo -e "\033[32;1mVerificando se o NMAP está instalado...\033[m"
 apt install -y nmap
 
 echo -e "\033[32;1mVerificando se o NIKTO está instalado...\033[m"
-apt install -y nikto
+# Define o local de instalação do Nikto
+INSTALL_DIR="/opt/nikto"
+
+# Clona o repositório do Nikto
+echo "Clonando o repositório do Nikto..."
+sudo git clone https://github.com/sullo/nikto.git "$INSTALL_DIR"
+
+# Verifica se o clone foi bem-sucedido
+if [ ! -d "$INSTALL_DIR" ]; then
+    echo "Falha ao clonar o repositório do Nikto. Verifique suas permissões."
+    exit 1
+fi
+
+# Torna o script do Nikto executável
+echo "Tornando o Nikto executável..."
+sudo chmod +x "$INSTALL_DIR/program/nikto.pl"
+
+# Cria um link simbólico para tornar o Nikto acessível globalmente
+echo "Criando um link simbólico para o Nikto..."
+sudo ln -sf "$INSTALL_DIR/program/nikto.pl" /usr/local/bin/nikto
 
 echo -e "\033[32;1mVerificando se o GOBUSTER está instalado...\033[m"
 apt install -y gobuster
@@ -312,28 +347,39 @@ TODAS()
    SSLYZE
 }
 
-NIKTO()
-{
-    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
-    while read line
-    do
-       [[ "$line" != '' ]] && ARRAY+=("$line")
-    done < $dirlista/$lstsites
+NIKTO() {
+  # Verificar se o diretório e o arquivo de lista de sites existem
+  if [ ! -d "$dirlista" ] || [ ! -f "$dirlista/$lstsites" ]; then
+    echo -e "\033[31;1mDiretório ou arquivo de lista de sites não encontrado.\033[m"
+    return 1 # Sair da função com erro
+  fi
 
-      #Percorrendo todos os valores do ARRAY
-      for linha in "${ARRAY[@]}"
-        do
-          mkdir $dir2/$linha/
-          echo -e "\033[32;1m ==== ($lstsites) - Nikto Full Scan ==== :=> $linha \033[m"
-          echo " "
-          nikto -Tuning 1234567890abc -h $linha -o $dir2/$linha/NIKTO_Tuning.html
-          nikto -C all -h $linha -o $dir2/$linha/NIKTO_CALL.html
-          #Removendo valor lido
-          #unset ARRAY
-          #Removendo o arquivo lido ($lstsites.txt)
-          #rm -r $dir2/$lstsites.txt
-    done
+  # Ler valores do arquivo em uma array
+  while IFS= read -r line; do
+    [[ "$line" != '' ]] && ARRAY+=("$line")
+  done < "$dirlista/$lstsites"
+
+  # Verificar se ARRAY está vazio
+  if [ ${#ARRAY[@]} -eq 0 ]; then
+    echo -e "\033[31;1mNenhum site para escanear.\033[m"
+    return 1 # Sair da função com erro
+  fi
+
+  # Percorrer todos os valores do ARRAY
+  for linha in "${ARRAY[@]}"; do
+    mkdir -p "$dir2/$linha/"
+    echo -e "\033[32;1m ==== ($lstsites) - Nikto Full Scan ==== :=> $linha \033[m"
+    echo " "
+
+    nikto -Tuning 1234567890abc -h "$linha" -o "$dir2/$linha/NIKTO_Tuning.html"
+    nikto -C all -h "$linha" -o "$dir2/$linha/NIKTO_CALL.html"
+  done
+
+  # Nota: Remoção de dados e arquivo foi comentada, descomente se necessário.
+  #unset ARRAY
+  #rm -r "$dir2/$lstsites.txt"
 }
+
 
 NMAP()
 {
@@ -492,9 +538,9 @@ SCANREDE() {
         echo
 
         # Executar o Nmap
-        nmap -p 80 $REDE -oG "/tmp/nullbyte.txt"
-        awk '/Up$/{print $2}' "/tmp/nullbyte.txt" >> "/tmp/$lstsites"
-        rm -f "/tmp/nullbyte.txt"
+        nmap -p 80 $REDE -oG "$dir3/nullbyte.txt"
+        awk '/Up$/{print $2}' "$dir3/nullbyte.txt" >> "$dir3/$lstsites"
+        rm -f "$dir3/nullbyte.txt"
         echo -e "\033[32;1m ==== IPs ONLINE na REDE $REDE identificados em $lstsites ==== \033[m"
 
     done
