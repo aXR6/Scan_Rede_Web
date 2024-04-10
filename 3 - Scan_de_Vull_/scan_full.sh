@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# Função para capturar e exibir erros
+handle_error() {
+    local EXIT_STATUS=$1
+    local ERROR_LINE=$2
+    if [ $EXIT_STATUS -ne 0 ]; then
+        echo -e "\033[1;31mErro detectado\033[0m"
+        echo "Status de saída: $EXIT_STATUS"
+        echo "Erro na linha: $ERROR_LINE"
+        echo "Mensagem: ${BASH_COMMAND}"
+        exit $EXIT_STATUS
+    fi
+}
+
+# Captura de erro com a trap
+trap 'handle_error $? $LINENO' ERR
+
 DirAtual=("${PWD}")
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
