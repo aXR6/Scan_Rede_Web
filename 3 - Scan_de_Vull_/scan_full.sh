@@ -1,16 +1,31 @@
 #!/bin/bash
 
-# Função para capturar e exibir erros
+# Função para capturar e exibir erros, registrando-os em um arquivo de log
 handle_error() {
     local EXIT_STATUS=$1
     local ERROR_LINE=$2
-    if [ $EXIT_STATUS -ne 0 ]; then
-        echo -e "\033[1;31mErro detectado\033[0m"
-        echo "Status de saída: $EXIT_STATUS"
-        echo "Erro na linha: $ERROR_LINE"
-        echo "Mensagem: ${BASH_COMMAND}"
-        exit $EXIT_STATUS
+    # Determina o diretório do script atual
+    local SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+    local LOG_DIR="$SCRIPT_DIR/logs"
+    local LOG_FILE="$LOG_DIR/error_log_$(date +%d-%m-%Y-%H-%M-%S).log"
+    
+    # Verifica se o diretório de log existe, se não, cria um
+    if [ ! -d "$LOG_DIR" ]; then
+        mkdir -p "$LOG_DIR"
     fi
+
+    # Mensagem de erro a ser registrada
+    local ERROR_MESSAGE="Erro detectado
+Status de saída: $EXIT_STATUS
+Erro na linha: $ERROR_LINE
+Comando: ${BASH_COMMAND}
+Data: $(date +'%d-%m-%Y %H:%M:%S')"
+
+    # Exibe a mensagem de erro no stderr
+    echo -e "\033[1;31m$ERROR_MESSAGE\033[0m" >&2
+
+    # Registra a mensagem de erro no arquivo de log
+    echo "$ERROR_MESSAGE" >> "$LOG_FILE"
 }
 
 # Captura de erro com a trap
