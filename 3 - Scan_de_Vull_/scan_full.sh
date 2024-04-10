@@ -156,6 +156,7 @@ TOOLXREDE() {
 AMBVIRT(){
    python3 -m venv /tmp
    source /tmp/bin/activate
+   echo -e "Ambiente temporario criado. Só curtir..."
 }
 
 INFOMAQUINA() {
