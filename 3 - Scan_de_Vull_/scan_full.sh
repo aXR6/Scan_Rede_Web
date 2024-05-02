@@ -448,26 +448,50 @@ NMAP() {
         # Varredura Intensiva com identificação de vulnerabilidades e exploits
         echo "Realizando varredura intensiva e identificação de vulnerabilidades..."
         nmap -T4 -A -v --script "vuln,exploit" -oA "$site_dir/Intensive_Scan" "$site"
+        if [ $? -ne 0 ]; then
+            echo "Erro na varredura intensiva, pulando para a próxima etapa."
+            continue
+        fi
 
         # Varredura abrangente e detalhada
         echo "Realizando varredura abrangente..."
         nmap -sS -sU -T4 -A -v -PE -PP -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA "$site_dir/Comprehensive_Scan" "$site"
+        if [ $? -ne 0 ]; then
+            echo "Erro na varredura abrangente, pulando para a próxima etapa."
+            continue
+        fi
 
         # Informações detalhadas, vulnerabilidades e análises adicionais
         echo "Coletando informações adicionais..."
         nmap -sV --script="asn-query,whois-ip,ip-geolocation-maxmind,default" -oA "$site_dir/Additional_Info" "$site"
+        if [ $? -ne 0 ]; then
+            echo "Erro na coleta de informações adicionais, pulando para a próxima etapa."
+            continue
+        fi
 
         # Simulações de engenharia social e DDoS
         echo "Simulando engenharia social e DDoS..."
         nmap -sU --script "ntp-monlist,dns-recursion,snmp-sysdescr" -p U:19,53,123,161 -oA "$site_dir/DDoS_Simulation" "$site"
+        if [ $? -ne 0 ]; then
+            echo "Erro na simulação DDoS, pulando para a próxima etapa."
+            continue
+        fi
 
         # Verificações adicionais para firewall
         echo "Verificações adicionais para firewall..."
         nmap -sA -Pn --script "firewall-bypass" -oA "$site_dir/Firewall_Check" "$site"
+        if [ $? -ne 0 ]; then
+            echo "Erro nas verificações de firewall, finalizando processamento para este site."
+            continue
+        fi
 
         # Realizar todos os tipos de scan para identificação completa
         echo "Realizando scan completo..."
         nmap -p- -A -T4 -oA "$site_dir/Full_Scan" "$site"
+        if [ $? -ne 0 ]; then
+            echo "Erro no scan completo, finalizando processamento para este site."
+            continue
+        fi
 
         echo -e "Processamento completado para: $site\n"
     done
