@@ -432,55 +432,44 @@ NIKTO() {
   #rm -r "$dir2/$lstsites.txt"
 }
 
-
-NMAP()
-{
-    # Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
-    while read line
-    do
-        [[ "$line" != '' ]] && ARRAY+=("$line")
+NMAP() {
+    # Preparação de diretório e leitura da lista de sites
+    while read -r line; do
+        [[ -n "$line" ]] && ARRAY+=("$line")
     done < "$dirlista/$lstsites"
 
-    # Percorrendo todos os valores do ARRAY
-    for linha in "${ARRAY[@]}"
-    do
-        mkdir -p "$dir2/$linha/"
-        echo -e "\033[32;1m ==== ($lstsites) - Gerar 20 IPs aleatórios e desconsiderar IPS e IDS ==== :=> $linha \033[m"
-        echo " "
-        nmap -D RND:20 --open -sS -p- "$linha" -oA "$dir2/$linha/PortasAbertas"
-        echo " "
-        echo -e "\033[32;1m ==== ($lstsites) - Slow comprehensive scan ==== :=> $linha \033[m"
-        echo " "
-        nmap -sS -sU -T4 -A -v -PE -PP -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA "$dir2/$linha/ShowcomprehensiveSCAN" "$linha"
-        echo " "
-        echo -e "\033[32;1m ==== ($lstsites) - Dados interessantes em ==== :=> $linha \033[m"
-        echo " "
-        nmap --reason --packet-trace -sN -f -sV -oA "$dir2/$linha/DadosInteressantes" "$linha"
-        echo " "
-        echo -e "\033[32;1m ==== ($lstsites) - INTENSIVO ==== :=> $linha \033[m"
-        echo " "
-        nmap -T4 -A -v -oA "$dir2/$linha/INTENSIVO" "$linha"
-        echo " "
-        echo -e "\033[32;1m ==== ($lstsites) - VULNERABILIDADES ==== :=> $linha \033[m"
-        echo " "
-        nmap -T4 -A -v --script vuln -oA "$dir2/$linha/VULNERAVEIS" "$linha"
-        echo " "
-        echo -e "\033[32;1m ==== ($lstsites) - EXPLOIT ==== :=> $linha \033[m"
-        echo " "
-        nmap -T4 -A -v --script exploit -oA "$dir2/$linha/EXPLOIT" "$linha"
-        echo " "
-        echo -e "\033[32;1m ==== ($lstsites) - PACOTES EXTRAS ==== :=> $linha \033[m"
-        echo " "
-        nmap -sS -v -Pn -A --open --script=vuln "$linha" -oA "$dir2/$linha/EXTRA_AnaliseVulnerabilidades"
-        nmap -v -sV -Pn -O --open "$linha" -oA "$dir2/$linha/EXTRA_PortasAbertasVersaoSO"
-        nmap -script=asn-query,whois-ip,ip-geolocation-maxmind "$linha" -oA "$dir2/$linha/EXTRA_InformacoesGOIP"
-        nmap -f -sV -A "$linha" -oA "$dir2/$linha/EXTRA_BurlFirewallFragPacote"
-        nmap -sS -sV -A "$linha" -oA "$dir2/$linha/EXTRA_BurlFirewallSYN"
-        nmap -Pn -sV -A "$linha" -oA "$dir2/$linha/EXTRA_BurlFirewallNICMP"
-        nmap -sS -O -Pn -v "$linha" -oA "$dir2/$linha/ScanFirewallFraco"
-        nmap -sU -A -Pn -n -pU:19,53,123,161 -script=ntp-monlist,dns-recursion,snmp-sysdescr "$linha" -oA "$dir2/$linha/EXTRA_FalhasDDoS"
-        nmap --script=mysql-brute "$linha" -oA "$dir2/$linha/EXTRA_BruteForceBD"
-        nmap -sTUR -O -v -p 1-65535 -Pn "$linha" -oA "$dir2/$linha/ScanPIPOCO"
+    # Processamento de cada site
+    for site in "${ARRAY[@]}"; do
+        local site_dir="$dir2/$site"
+        mkdir -p "$site_dir"
+
+        echo -e "\033[32;1m ==== $lstsites - Análises para: $site \033[m"
+
+        # Varredura Intensiva com identificação de vulnerabilidades e exploits
+        echo "Realizando varredura intensiva e identificação de vulnerabilidades..."
+        nmap -T4 -A -v --script "vuln,exploit" -oA "$site_dir/Intensive_Scan" "$site"
+
+        # Varredura abrangente e detalhada
+        echo "Realizando varredura abrangente..."
+        nmap -sS -sU -T4 -A -v -PE -PP -PA3389 -PU40125 -PY -g 53 --script "default or (discovery and safe)" -oA "$site_dir/Comprehensive_Scan" "$site"
+
+        # Informações detalhadas, vulnerabilidades e análises adicionais
+        echo "Coletando informações adicionais..."
+        nmap -sV --script="asn-query,whois-ip,ip-geolocation-maxmind,default" -oA "$site_dir/Additional_Info" "$site"
+
+        # Simulações de engenharia social e DDoS
+        echo "Simulando engenharia social e DDoS..."
+        nmap -sU --script "ntp-monlist,dns-recursion,snmp-sysdescr" -p U:19,53,123,161 -oA "$site_dir/DDoS_Simulation" "$site"
+
+        # Verificações adicionais para firewall
+        echo "Verificações adicionais para firewall..."
+        nmap -sA -Pn --script "firewall-bypass" -oA "$site_dir/Firewall_Check" "$site"
+
+        # Realizar todos os tipos de scan para identificação completa
+        echo "Realizando scan completo..."
+        nmap -p- -A -T4 -oA "$site_dir/Full_Scan" "$site"
+
+        echo -e "Processamento completado para: $site\n"
     done
 }
 
