@@ -31,22 +31,36 @@ Data: $(date +'%d-%m-%Y %H:%M:%S')"
 # Captura de erro com a trap
 trap 'handle_error $? $LINENO' ERR
 
-DirAtual=("${PWD}")
+DirAtual="${PWD}"
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
 # Verificando se o script está sendo executado com privilégios de superusuário (sudo)
 if [ -n "$SUDO_USER" ]; then
     # Se sim, usar a variável $SUDO_USER
-    dir="/home/$SUDO_USER/Documentos/$data"
+    userHome="/home/$SUDO_USER"
 else
     # Se não, usar a variável $USER
-    dir="/home/$USER/Documentos/$data"
+    userHome="/home/$USER"
 fi
+
+# Verificando existência das pastas Documentos e Documents
+if [ -d "$userHome/Documentos" ]; then
+    dir="$userHome/Documentos/$data"
+    dirLang="português"
+elif [ -d "$userHome/Documents" ]; then
+    dir="$userHome/Documents/$data"
+    dirLang="inglês"
+else
+    echo "Pasta Documentos/Documents não encontrada."
+    exit 1
+fi
+
+# Criando o diretório com a data atual, se necessário
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
-    echo "Diretório criado: $dir"
+    echo "Diretório criado: $dir (em $dirLang)"
 else
-    echo "Diretório já existe: $dir"
+    echo "Diretório já existe: $dir (em $dirLang)"
 fi
 
 ##toolxmenu##
@@ -403,31 +417,42 @@ NIKTO() {
   # Verificar se o diretório e o arquivo de lista de sites existem
   if [ ! -d "$dirlista" ] || [ ! -f "$dirlista/$lstsites" ]; then
     echo -e "\033[31;1mDiretório ou arquivo de lista de sites não encontrado.\033[m"
-    return 1 # Sair da função com erro
+    return 1  # Sair da função com erro
   fi
 
   # Ler valores do arquivo em uma array
+  ARRAY=()  # Inicializando a array para evitar dados residuais
   while IFS= read -r line; do
-    [[ "$line" != '' ]] && ARRAY+=("$line")
+    [[ -n "$line" ]] && ARRAY+=("$line")
   done < "$dirlista/$lstsites"
 
   # Verificar se ARRAY está vazio
   if [ ${#ARRAY[@]} -eq 0 ]; then
     echo -e "\033[31;1mNenhum site para escanear.\033[m"
-    return 1 # Sair da função com erro
+    return 1  # Sair da função com erro
   fi
 
   # Percorrer todos os valores do ARRAY
-  for linha in "${ARRAY[@]}"; do
-    mkdir -p "$dir2/$linha/"
-    echo -e "\033[32;1m ==== ($lstsites) - Nikto Full Scan ==== :=> $linha \033[m"
-    echo " "
+  for site in "${ARRAY[@]}"; do
+    local site_dir="$dir2/$site"
+    mkdir -p "$site_dir"
+    echo -e "\033[32;1m ==== Nikto Full Scan em andamento ==== :=> $site \033[m"
 
-    nikto -Tuning 1234567890abc -h "$linha" -o "$dir2/$linha/NIKTO_Tuning.html"
-    nikto -C all -h "$linha" -o "$dir2/$linha/NIKTO_CALL.html"
+    # Executar Nikto com configurações completas e gerenciamento de erros
+    if ! nikto -Tuning 1234567890abc -h "$site" -o "$site_dir/NIKTO_Tuning.html"; then
+      echo "Erro ao executar Nikto com Tuning no site: $site"
+      continue  # Continuar com o próximo site em caso de erro
+    fi
+
+    if ! nikto -C all -h "$site" -o "$site_dir/NIKTO_CALL.html"; then
+      echo "Erro ao executar Nikto com opção '-C all' no site: $site"
+      continue  # Continuar com o próximo site em caso de erro
+    fi
+
+    echo "Análise completa para: $site"
   done
 
-  # Nota: Remoção de dados e arquivo foi comentada, descomente se necessário.
+  # Limpeza opcional (descomente as linhas abaixo se necessário)
   #unset ARRAY
   #rm -r "$dir2/$lstsites.txt"
 }
