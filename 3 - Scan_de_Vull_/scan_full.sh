@@ -31,6 +31,35 @@ Data: $(date +'%d-%m-%Y %H:%M:%S')"
 # Captura de erro com a trap
 trap 'handle_error $? $LINENO' ERR
 
+# Função para configurar rsyslog automaticamente
+configure_rsyslog() {
+    local rsyslog_conf="/etc/rsyslog.d/SCA_REDE_WEB.conf"
+    local rsyslog_template="# Log messages from 'SCA_REDE_WEB' to a dynamic file path based on the date \n:msg,contains, \"SCA_REDE_WEB\" /var/log/SCA_REDE_WEB/%\$year%-%\$month%-%\$day%/SCA_REDE_WEB.log \n#& stop"
+
+    # Verifica se o arquivo de configuração já existe
+    if [ ! -f "$rsyslog_conf" ]; then
+        echo "Configurando rsyslog para SCA_REDE_WEB..."
+        echo -e $rsyslog_template | sudo tee $rsyslog_conf > /dev/null
+        
+        # Reiniciando rsyslog para aplicar configurações
+        echo "Reiniciando rsyslog..."
+        sudo systemctl restart rsyslog
+        echo "rsyslog configurado e reiniciado com sucesso!"
+    else
+        echo "Configuração de rsyslog já existe."
+    fi
+}
+
+# Chama a função de configuração do rsyslog no início do script
+configure_rsyslog
+
+# Função para registrar eventos
+log_event() {
+    local message=$1
+    local log_type=$2  # Info, Error, Debug
+    logger -t myScript -p local0.$log_type "$message"
+}
+
 DirAtual="${PWD}"
 data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
