@@ -349,10 +349,11 @@ fi
 
 SECLIST()
 {
-echo -e "\033[32;1mBaixar WordList Oficial Kali Linux.\033[m"
-cd $DirAtual
-git clone --depth 1 https://github.com/danielmiessler/SecLists.git
-ls SecLists/
+    echo -e "\033[32;1mBaixar WordList Oficial Kali Linux.\033[m"
+    sudo mkdir -p /opt/Scan_Rede_Web
+    cd /opt/Scan_Rede_Web
+    sudo git clone --depth 1 https://github.com/danielmiessler/SecLists.git
+    ls SecLists/
 }
 
 DETECTSERVICE() {
@@ -553,54 +554,80 @@ NMAP() {
 
 GOBUSTER()
 {
-    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
-    while read line
+    # Inicializando o ARRAY
+    ARRAY=()
+    
+    # Recebendo valores do arquivo ($lstsites.txt) em um ARRAY
+    while IFS= read -r line
     do
-       [[ "$line" != '' ]] && ARRAY+=("$line")
-    done < $dirlista/$lstsites
+        [[ "$line" != '' ]] && ARRAY+=("$line")
+    done < "$dirlista/$lstsites"
 
-      #Percorrendo todos os valores do ARRAY
-      for linha in "${ARRAY[@]}"
-        do
-          mkdir $dir2/$linha/
-          echo -e "\033[32;1m ==== ($lstsites) - GOBUSTER  ==== :=> $linha \033[m"
-          echo -e "\033[32;1m Analisando o site ... \033[m"
-          gobuster -u $linha -w $DirAtual/SecLists/Discovery/Web-Content/common.txt -q -n -e -o $dir2/$linha/Rel1_$linha
-          gobuster -m dns -t 100 -u $linha -w $DirAtual/SecLists/Discovery/DNS/namelist.txt -o $dir2/$linha/Rel2_$linha
-          gobuster -m dns -u $linha -w $DirAtual/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -o $dir2/$linha/Rel3_$linha
-          gobuster -m dns -u $linha -w $DirAtual/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -i -o $dir2/$linha/Rel4_$linha
-          echo " "
-          #Removendo valor lido
-          #unset ARRAY
-          #Removendo o arquivo lido ($lstsites.txt)
-          #rm -r $dir2/$lstsites.txt
-      done
+    # Percorrendo todos os valores do ARRAY
+    for linha in "${ARRAY[@]}"
+    do
+        mkdir -p "$dir2/$linha/"
+        echo -e "\033[32;1m ==== ($lstsites) - GOBUSTER  ==== :=> $linha \033[m"
+        echo -e "\033[32;1m Analisando o site ... \033[m"
+        
+        gobuster dir -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/Web-Content/common.txt -q -n -e -o "$dir2/$linha/Rel1_$linha" || {
+            echo -e "\033[31;1mErro ao executar gobuster dir no site $linha\033[m"
+            continue
+        }
+        
+        gobuster dns -t 100 -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/namelist.txt -o "$dir2/$linha/Rel2_$linha" || {
+            echo -e "\033[31;1mErro ao executar gobuster dns (namelist) no site $linha\033[m"
+            continue
+        }
+        
+        gobuster dns -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -o "$dir2/$linha/Rel3_$linha" || {
+            echo -e "\033[31;1mErro ao executar gobuster dns (subdomains-top1million) no site $linha\033[m"
+            continue
+        }
+        
+        gobuster dns -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -i -o "$dir2/$linha/Rel4_$linha" || {
+            echo -e "\033[31;1mErro ao executar gobuster dns (subdomains-top1million - i) no site $linha\033[m"
+            continue
+        }
+        
+        echo " "
+    done
 }
 
 HYDRA()
 {
-    dirpass="$DirAtual/SecLists/Usernames/top-usernames-shortlist.txt"
-    #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
-    while read line
-    do
-       [[ "$line" != '' ]] && ARRAY+=("$line")
-    done < $dirlista/$lstsites
+    dirpass="/opt/Scan_Rede_Web/SecLists/Usernames/top-usernames-shortlist.txt"
 
-      #Percorrendo todos os valores do ARRAY
-      for linha in "${ARRAY[@]}"
+    # Inicializando o ARRAY
+    ARRAY=()
+
+    # Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
+    while IFS= read -r line
+    do
+        [[ "$line" != '' ]] && ARRAY+=("$line")
+    done < "$dirlista/$lstsites"
+
+    # Percorrendo todos os valores do ARRAY
+    for linha in "${ARRAY[@]}"
+    do
+        mkdir -p "$dir2/$linha/"
+        echo -e "\033[32;1m ==== ($lstsites) - HYDRA  ==== :=> $linha \033[m"
+        echo -e "\033[32;1m Analisando o site ... \033[m"
+
+        while IFS= read -r user
         do
-          mkdir $dir2/$linha/
-          echo -e "\033[32;1m ==== ($lstsites) - HYDRA  ==== :=> $linha \033[m"
-          echo -e "\033[32;1m Analisando o site ... \033[m"
-            while read user; do
-               hydra -l $user -P $DirAtual/SecLists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt $linha ftp
-               hydra -l $user -P $DirAtual/SecLists/Passwords/Common-Credentials/10k-most-common.txt $linha ssh
-            done < $dirpass
-          #Removendo valor lido
-          #unset ARRAY
-          #Removendo o arquivo lido ($lstsites.txt)
-          #rm -r $dir2/$lstsites.txt
-      done
+            hydra -l "$user" -P "/opt/Scan_Rede_Web//SecLists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt" "$linha" ftp || {
+                echo -e "\033[31;1mErro ao executar hydra ftp no site $linha com o usuário $user\033[m"
+                continue
+            }
+            hydra -l "$user" -P "/opt/Scan_Rede_Web//SecLists/Passwords/Common-Credentials/10k-most-common.txt" "$linha" ssh || {
+                echo -e "\033[31;1mErro ao executar hydra ssh no site $linha com o usuário $user\033[m"
+                continue
+            }
+        done < "$dirpass"
+
+        echo " "
+    done
 }
 
 SSLYZE()
@@ -617,7 +644,7 @@ SSLYZE()
           mkdir $dir2/$linha/
           echo -e "\033[32;1m ==== ($lstsites) - sslyzev  ==== :=> $linha \033[m"
           echo -e "\033[32;1m Analisando o site ... \033[m"
-          python -m sslyze $linha > $dir2/$linha/DadosSobreCertf_$linha.html
+          python3 -m sslyze $linha > $dir2/$linha/DadosSobreCertf_$linha.html
           #Removendo valor lido
           #unset ARRAY
           #Removendo o arquivo lido ($lstsites.txt)
