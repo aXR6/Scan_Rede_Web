@@ -33,12 +33,12 @@ trap 'handle_error $? $LINENO' ERR
 
 # Função para configurar rsyslog automaticamente
 configure_rsyslog() {
-    local rsyslog_conf="/etc/rsyslog.d/SCA_REDE_WEB.conf"
-    local rsyslog_template="# Log messages from 'SCA_REDE_WEB' to a dynamic file path based on the date \n:msg,contains, \"SCA_REDE_WEB\" /var/log/SCA_REDE_WEB/%\$year%-%\$month%-%\$day%/SCA_REDE_WEB.log \n#& stop"
+    local rsyslog_conf="/etc/rsyslog.d/SCAN_REDE_WEB.conf"
+    local rsyslog_template="# Log messages from 'SCAN_REDE_WEB' to a dynamic file path based on the date \n:msg,contains, \"SCAN_REDE_WEB\" /var/log/SCAN_REDE_WEB/%\$year%-%\$month%-%\$day%/SCAN_REDE_WEB.log \n#& stop"
 
     # Verifica se o arquivo de configuração já existe
     if [ ! -f "$rsyslog_conf" ]; then
-        echo "Configurando rsyslog para SCA_REDE_WEB..."
+        echo "Configurando rsyslog para SCAN_REDE_WEB..."
         echo -e $rsyslog_template | sudo tee $rsyslog_conf > /dev/null
         
         # Reiniciando rsyslog para aplicar configurações
