@@ -570,22 +570,22 @@ GOBUSTER()
         echo -e "\033[32;1m ==== ($lstsites) - GOBUSTER  ==== :=> $linha \033[m"
         echo -e "\033[32;1m Analisando o site ... \033[m"
         
-        gobuster dir -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/Web-Content/common.txt -q -n -e -o "$dir2/$linha/Rel1_$linha" || {
+        gobuster dir -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/Web-Content/common.txt --exclude-length 523 -q -n -e -o "$dir2/$linha/Rel1_$linha" || {
             echo -e "\033[31;1mErro ao executar gobuster dir no site $linha\033[m"
             continue
         }
         
-        gobuster dns -t 100 -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/namelist.txt -o "$dir2/$linha/Rel2_$linha" || {
+        gobuster dns -t 100 -d "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/namelist.txt -o "$dir2/$linha/Rel2_$linha" || {
             echo -e "\033[31;1mErro ao executar gobuster dns (namelist) no site $linha\033[m"
             continue
         }
         
-        gobuster dns -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -o "$dir2/$linha/Rel3_$linha" || {
+        gobuster dns -d "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -o "$dir2/$linha/Rel3_$linha" || {
             echo -e "\033[31;1mErro ao executar gobuster dns (subdomains-top1million) no site $linha\033[m"
             continue
         }
         
-        gobuster dns -u "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -i -o "$dir2/$linha/Rel4_$linha" || {
+        gobuster dns -d "$linha" -w /opt/Scan_Rede_Web/SecLists/Discovery/DNS/subdomains-top1million-110000.txt -i -o "$dir2/$linha/Rel4_$linha" || {
             echo -e "\033[31;1mErro ao executar gobuster dns (subdomains-top1million - i) no site $linha\033[m"
             continue
         }
