@@ -13,11 +13,11 @@ handle_error() {
 
     # Mensagem de erro formatada
     local ERROR_MESSAGE="--- ERRO DETECTADO ---
-Status de saída: $EXIT_STATUS
-Erro na linha: $ERROR_LINE
-Comando: ${BASH_COMMAND}
-Data: $(date +'%Y-%m-%d %H:%M:%S')
-----------------------"
+    Status de saída: $EXIT_STATUS
+    Erro na linha: $ERROR_LINE
+    Comando: ${BASH_COMMAND}
+    Data: $(date +'%Y-%m-%d %H:%M:%S')
+    ----------------------"
 
     # Exibe e grava a mensagem de erro
     echo -e "\033[1;31m$ERROR_MESSAGE\033[0m" >&2
@@ -35,17 +35,25 @@ configure_rsyslog() {
     local RSYSLOG_CONF="/etc/rsyslog.d/SCAN_REDE_WEB.conf"
 
     # Template rsyslog para direcionar logs ao diretório do script
-    local RSYSLOG_TEMPLATE="# Log messages from 'SCAN_REDE_WEB' to a custom log file
-:syslogtag, isequal, \"myScript:\" ${LOG_DIR}/syslog.log
-& stop"
+    local RSYSLOG_TEMPLATE
+    RSYSLOG_TEMPLATE=$(cat <<EOF
+# Log messages from 'SCAN_REDE_WEB' to a custom log file
+if \$programname == 'SCAN_REDE_WEB' then /var/log/SCAN_REDE_WEB.log
+& stop
+EOF
+)
 
     # Verifica e aplica configurações do rsyslog
     if [ ! -f "$RSYSLOG_CONF" ]; then
         echo "Configurando rsyslog para SCAN_REDE_WEB..."
-        echo -e "$RSYSLOG_TEMPLATE" | sudo tee "$RSYSLOG_CONF" > /dev/null
-
+        
+        # Cria o arquivo de configuração do rsyslog
+        echo "$RSYSLOG_TEMPLATE" | sudo tee "$RSYSLOG_CONF" > /dev/null
+        
+        # Reinicia o rsyslog para aplicar configurações
         echo "Reiniciando rsyslog para aplicar as configurações..."
         sudo systemctl restart rsyslog
+
         log_message "rsyslog configurado com sucesso." "info"
     else
         log_message "Configuração de rsyslog já existente." "warning"
@@ -77,7 +85,7 @@ configure_rsyslog
 log_event() {
     local message=$1
     local log_type=$2  # Info, Error, Debug
-    logger -t myScript -p local0.$log_type "$message"
+    logger -t SCAN_REDE_WEB -p local0.$log_type "$message"
 }
 
 DirAtual="${PWD}"
