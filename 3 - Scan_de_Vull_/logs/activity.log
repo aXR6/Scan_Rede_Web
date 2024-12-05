@@ -1,0 +1,9 @@
+[2024-12-05 12:40:53] [info] Iniciando execução do script.
+[2024-12-05 12:40:53] [info] rsyslog configurado com sucesso.
+[2024-12-05 12:40:53] [info] Diretório criado: /home/thallestsc/Documentos/05_12_24_quinta (em português)
+[2024-12-05 12:40:53] [info] Executando ToolX para Rede.
+[2024-12-05 12:40:53] [info] Menu principal inicializado.
+[2024-12-05 12:40:53] [debug] Menu limpo.
+[2024-12-05 12:40:56] [info] Selecionado: Testar Sites (Lista de SITES).
+[2024-12-05 12:40:56] [debug] Menu limpo.
+[2024-12-05 12:41:06] [info] Iniciando o NIKTO.

@@ -4,51 +4,71 @@
 handle_error() {
     local EXIT_STATUS=$1
     local ERROR_LINE=$2
-    # Determina o diretório do script atual
     local SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
     local LOG_DIR="$SCRIPT_DIR/logs"
-    local LOG_FILE="$LOG_DIR/error_log_$(date +%d-%m-%Y-%H-%M-%S).log"
-    
-    # Verifica se o diretório de log existe, se não, cria um
-    if [ ! -d "$LOG_DIR" ]; then
-        mkdir -p "$LOG_DIR"
-    fi
+    local LOG_FILE="$LOG_DIR/errors.log"
 
-    # Mensagem de erro a ser registrada
-    local ERROR_MESSAGE="Erro detectado
+    # Cria o diretório de logs se não existir
+    [ ! -d "$LOG_DIR" ] && mkdir -p "$LOG_DIR"
+
+    # Mensagem de erro formatada
+    local ERROR_MESSAGE="--- ERRO DETECTADO ---
 Status de saída: $EXIT_STATUS
 Erro na linha: $ERROR_LINE
 Comando: ${BASH_COMMAND}
-Data: $(date +'%d-%m-%Y %H:%M:%S')"
+Data: $(date +'%Y-%m-%d %H:%M:%S')
+----------------------"
 
-    # Exibe a mensagem de erro no stderr
+    # Exibe e grava a mensagem de erro
     echo -e "\033[1;31m$ERROR_MESSAGE\033[0m" >&2
-
-    # Registra a mensagem de erro no arquivo de log
     echo "$ERROR_MESSAGE" >> "$LOG_FILE"
+    log_message "$ERROR_MESSAGE" "error"
 }
 
-# Captura de erro com a trap
+# Captura de erro com trap
 trap 'handle_error $? $LINENO' ERR
 
-# Função para configurar rsyslog automaticamente
+# Função para configurar o rsyslog automaticamente
 configure_rsyslog() {
-    local rsyslog_conf="/etc/rsyslog.d/SCAN_REDE_WEB.conf"
-    local rsyslog_template="# Log messages from 'SCAN_REDE_WEB' to a dynamic file path based on the date \n:msg,contains, \"SCAN_REDE_WEB\" /var/log/SCAN_REDE_WEB/%\$year%-%\$month%-%\$day%/SCAN_REDE_WEB.log \n#& stop"
+    local SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+    local LOG_DIR="$SCRIPT_DIR/logs"
+    local RSYSLOG_CONF="/etc/rsyslog.d/SCAN_REDE_WEB.conf"
 
-    # Verifica se o arquivo de configuração já existe
-    if [ ! -f "$rsyslog_conf" ]; then
+    # Template rsyslog para direcionar logs ao diretório do script
+    local RSYSLOG_TEMPLATE="# Log messages from 'SCAN_REDE_WEB' to a custom log file
+:syslogtag, isequal, \"myScript:\" ${LOG_DIR}/syslog.log
+& stop"
+
+    # Verifica e aplica configurações do rsyslog
+    if [ ! -f "$RSYSLOG_CONF" ]; then
         echo "Configurando rsyslog para SCAN_REDE_WEB..."
-        echo -e $rsyslog_template | sudo tee $rsyslog_conf > /dev/null
-        
-        # Reiniciando rsyslog para aplicar configurações
-        echo "Reiniciando rsyslog..."
+        echo -e "$RSYSLOG_TEMPLATE" | sudo tee "$RSYSLOG_CONF" > /dev/null
+
+        echo "Reiniciando rsyslog para aplicar as configurações..."
         sudo systemctl restart rsyslog
-        echo "rsyslog configurado e reiniciado com sucesso!"
+        log_message "rsyslog configurado com sucesso." "info"
     else
-        echo "Configuração de rsyslog já existe."
+        log_message "Configuração de rsyslog já existente." "warning"
     fi
 }
+
+# Função genérica para registrar eventos em log
+log_message() {
+    local MESSAGE=$1
+    local LEVEL=${2:-info} # Nível padrão: info
+    local SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+    local LOG_DIR="$SCRIPT_DIR/logs"
+    local LOG_FILE="$LOG_DIR/activity.log"
+
+    # Cria o diretório de logs se não existir
+    [ ! -d "$LOG_DIR" ] && mkdir -p "$LOG_DIR"
+
+    # Formata e grava a mensagem no log
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [$LEVEL] $MESSAGE" >> "$LOG_FILE"
+}
+
+# Inicialização
+log_message "Iniciando execução do script." "info"
 
 # Chama a função de configuração do rsyslog no início do script
 configure_rsyslog
@@ -65,10 +85,8 @@ data=$(date +"%d_%m_%y_%A")
 t=$(date +"%T")
 # Verificando se o script está sendo executado com privilégios de superusuário (sudo)
 if [ -n "$SUDO_USER" ]; then
-    # Se sim, usar a variável $SUDO_USER
     userHome="/home/$SUDO_USER"
 else
-    # Se não, usar a variável $USER
     userHome="/home/$USER"
 fi
 
@@ -80,16 +98,16 @@ elif [ -d "$userHome/Documents" ]; then
     dir="$userHome/Documents/$data"
     dirLang="inglês"
 else
-    echo "Pasta Documentos/Documents não encontrada."
+    log_message "Pasta Documentos/Documents não encontrada." "error"
     exit 1
 fi
 
 # Criando o diretório com a data atual, se necessário
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
-    echo "Diretório criado: $dir (em $dirLang)"
+    log_message "Diretório criado: $dir (em $dirLang)" "info"
 else
-    echo "Diretório já existe: $dir (em $dirLang)"
+    log_message "Diretório já existente: $dir (em $dirLang)" "info"
 fi
 
 ##toolxmenu##
@@ -111,30 +129,39 @@ toolxmenu() {
 	    do
 	      case $opt in
 		 "(1º Faça)-Instalação dos componentes")
+            log_message "Selecionado: Instalação dos componentes." "info"
 		    INSTALLCOMP
 		    ;;
 		 "(2º Faça)-Instalação das ferramentas")
+            log_message "Selecionado: Instalação das ferramentas." "info"
 		    INSTALLTOOLS
 		    ;;
 		 "Testar a Rede (Toda a REDE)")
+            log_message "Selecionado: Testar a Rede (Toda a REDE)." "info"
 		    TOOLXREDE
 		    ;;
 		 "Testar Sites (Lista de SITES)")
+            log_message "Selecionado: Testar Sites (Lista de SITES)." "info"
 		    TOOLXSITE
 		    ;;
 		 "Baixar WordList Oficial Kali Linux")
+            log_message "Selecionado: Baixar WordList Oficial Kali Linux." "info"
 		    SECLIST
 		    ;;
 		 "Informações sobre Hardware e SO")
+            log_message "Selecionado: Informações sobre Hardware e SO." "info"
 		    INFOMAQUINA
           ;;
        "Criar um ambiente virtual")
+          log_message "Selecionado: Criar um ambiente virtual." "info"
           AMBVIRT
 		    ;;
 		 "SAIR")
+            log_message "Execução do script finalizada pelo usuário." "info"
 		    exit 0
 		    ;;
 		 *) 
+            log_message "Opção inválida selecionada: $REPLY." "warning"
 		    echo "A opção ($REPLY) não existe."
 		    ;;
       esac
@@ -201,6 +228,7 @@ TOOLXSITE() {
 ##TOOLXREDE##
 ##################
 ##START TOOLXREDE##
+log_message "Executando ToolX para Rede." "info"
 TOOLXREDE() {
    CLEARMEN
    PS3=("└──> ToolXMenu : ")
@@ -240,12 +268,18 @@ AMBVIRT(){
    if [ ! -d "$VENV_DIR" ]; then
       python3 -m venv "$VENV_DIR"
       echo -e "Ambiente temporario criado."
+      log_message "Ambiente virtual criado no diretório: $VENV_DIR." "info"
+
    fi
 
    # Ativa o ambiente virtual
    source "$VENV_DIR/bin/activate"
    echo -e "Ambiente ativado. Só curtir..."
-   
+   log_message "Ambiente virtual ativado." "info"
+
+
+   # Iniciando script
+   log_message "Ambiente ativado."
 }
 
 INFOMAQUINA() {
@@ -286,6 +320,9 @@ INFOMAQUINA() {
 
   echo -e "\033[1;31m:=> Informações do kernel \033[0m"
   uname -r
+
+   # Iniciando script
+   log_message "Informações do sistema."
 }
 
 INSTALLTOOLS()
@@ -345,6 +382,9 @@ else
   cd "$DirAtual"
   install_sslyze
 fi
+
+   # Iniciando script
+    log_message "Ferramentas instaladas: Nmap, Nikto, Gobuster." "info"
 }
 
 SECLIST()
@@ -354,6 +394,9 @@ SECLIST()
     cd /opt/Scan_Rede_Web
     sudo git clone --depth 1 https://github.com/danielmiessler/SecLists.git
     ls SecLists/
+
+    # Iniciando script
+    log_message "SecLists baixado para /opt/Scan_Rede_Web." "info"
 }
 
 DETECTSERVICE() {
@@ -387,6 +430,9 @@ DETECTSERVICE() {
 
     echo -e "\033[32;1mTrabalho concluído. Serviços detectados:\033[m"
     cat $dir3/$lstsites
+
+    # Iniciando script
+    log_message "Função para detectar serviços."
 }
 
 INSTALLCOMP()
@@ -399,6 +445,9 @@ $pipinstall install --root-user-action=ignore tld --break-system-packages
 echo -e "\033[32;1mVerificando se o GIT está instalado.\033[m"
 apt update
 apt install git -y
+
+    # Iniciando script
+    log_message "Componentes básicos instalados: git." "info"
 }
 
 LSTFILE()
@@ -432,6 +481,7 @@ wc -l $dirlista'/'$lstsites
 CLEARMEN()
 {
 unset ARRAY
+    log_message "Menu limpo." "debug"
 }
 
 TODAS()
@@ -444,6 +494,10 @@ TODAS()
 }
 
 NIKTO() {
+
+    # Iniciando script
+    log_message "Iniciando o NIKTO."
+
   # Verificar se o diretório e o arquivo de lista de sites existem
   if [ ! -d "$dirlista" ] || [ ! -f "$dirlista/$lstsites" ]; then
     echo -e "\033[31;1mDiretório ou arquivo de lista de sites não encontrado.\033[m"
@@ -488,6 +542,10 @@ NIKTO() {
 }
 
 NMAP() {
+
+    # Iniciando script
+    log_message "Iniciando o NMAP."
+
     # Preparação de diretório e leitura da lista de sites
     while read -r line; do
         [[ -n "$line" ]] && ARRAY+=("$line")
@@ -554,6 +612,10 @@ NMAP() {
 
 GOBUSTER()
 {
+
+    # Iniciando script
+    log_message "Iniciando o GOBUSTER."
+
     # Inicializando o ARRAY
     ARRAY=()
     
@@ -596,6 +658,10 @@ GOBUSTER()
 
 HYDRA()
 {
+
+    # Iniciando script
+    log_message "Iniciando o HYDRA."
+
     dirpass="/opt/Scan_Rede_Web/SecLists/Usernames/top-usernames-shortlist.txt"
 
     # Inicializando o ARRAY
@@ -632,6 +698,10 @@ HYDRA()
 
 SSLYZE()
 {
+
+    # Iniciando script
+    log_message "Iniciando o SSLYZE."
+
     #Recebendo valores do arquivo ($lstsites.txt) em uma ARRAY
     while read line
     do
@@ -659,6 +729,10 @@ cidr_to_netmask() {
 }
 
 SCANREDE() {
+
+    # Iniciando script
+    log_message "Iniciando o Scan de Rede."
+
     echo -e '\033[32;1m ==== Iniciando Scan da Rede ==== \033[m'
 
     # Garantir que o diretório de saída exista
@@ -735,6 +809,7 @@ echo -e "\033[1;31m:=> Não seja sujo! Se achou de graça, distribua de graça r
 echo -e "\033[1;31m:=> Script ToolXMenu, desenvolvido por mim (Thalles Canela - ToolX), para organização das ferramentas encontradas em: \033[0m"
 echo -e "\033[1;31m:=> https://github.com/aXR6 \033[0m"
 echo ""
+log_message "Menu principal inicializado." "info"
 toolxmenu
 ##Fim Bem Vindo##
 #######################
